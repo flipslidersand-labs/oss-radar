@@ -152,7 +152,19 @@ async def on_call_tool(ctx, params) -> types.CallToolResult:
     )
 
 
+def _check_env() -> None:
+    import sys
+    warnings = []
+    if not EMBED_API_KEY:
+        warnings.append("EMBED_API_KEY が未設定です。embedding-svc の認証に失敗します")
+    if "192.168.68" in EMBED_URL and not os.getenv("EMBED_URL"):
+        warnings.append(f"EMBED_URL がデフォルト値 ({EMBED_URL}) のままです")
+    for w in warnings:
+        print(f"[oss-radar MCP WARN] {w}", file=sys.stderr)
+
+
 async def main() -> None:
+    _check_env()
     server = Server("oss-radar", on_list_tools=on_list_tools, on_call_tool=on_call_tool)
     async with stdio_server() as (read, write):
         await server.run(read, write, server.create_initialization_options())
