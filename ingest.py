@@ -53,6 +53,10 @@ def ingest(
         batch = repos[i : i + BATCH_SIZE]
         texts = [r.embed_text() for r in batch]
         vectors = _embed(texts, embed_url, embed_api_key, embed_collection)
+        if len(vectors) != len(batch):
+            raise ValueError(
+                f"embed mismatch at batch {i//BATCH_SIZE}: sent {len(batch)} texts, got {len(vectors)} vectors"
+            )
 
         points = [
             PointStruct(
