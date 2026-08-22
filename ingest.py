@@ -13,12 +13,16 @@ VECTOR_SIZE = 768  # MINIPC e5 model output dim
 BATCH_SIZE = 64
 
 
-def _embed(texts: list[str], embed_url: str) -> list[list[float]]:
-    with httpx.Client(timeout=60.0) as client:
-        r = client.post(embed_url, json={"texts": texts})
+def _embed(texts: list[str], embed_url: str, api_key: str = "", embed_collection: str = "sessions") -> list[list[float]]:
+    headers = {"X-API-Key": api_key} if api_key else {}
+    with httpx.Client(timeout=180.0) as client:
+        r = client.post(
+            embed_url,
+            json={"texts": texts, "collection": embed_collection, "mode": "index"},
+            headers=headers,
+        )
         r.raise_for_status()
-    data = r.json()
-    return data.get("embeddings", data)
+    return r.json()["vectors"]
 
 
 def _ensure_collection(client: QdrantClient, collection: str) -> None:
@@ -35,6 +39,8 @@ def ingest(
     qdrant_url: str,
     embed_url: str,
     collection: str,
+    embed_api_key: str = "",
+    embed_collection: str = "sessions",
 ) -> int:
     if not repos:
         return 0
@@ -46,7 +52,7 @@ def ingest(
     for i in range(0, len(repos), BATCH_SIZE):
         batch = repos[i : i + BATCH_SIZE]
         texts = [r.embed_text() for r in batch]
-        vectors = _embed(texts, embed_url)
+        vectors = _embed(texts, embed_url, embed_api_key, embed_collection)
 
         points = [
             PointStruct(
