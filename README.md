@@ -17,13 +17,19 @@ oss-radar/
 │   ├── github_search.py   # GitHub Search API (全言語)
 │   ├── gh_trending.py     # github.com/trending スクレイプ
 │   ├── bestofjs.py        # JS/TS 特化 (GitHub Search 代替)
-│   └── ossinsight.py      # ossinsight.io コレクション別
+│   └── ossinsight.py      # ossinsight.io トレンド
+├── oss_radar/
+│   └── query.py           # SearchClient — embed + Qdrant 共通ヘルパー
+├── scripts/
+│   └── deploy.sh          # MINIPC 自動デプロイ (git pull + pip sync)
 ├── ingest.py              # embed + Qdrant upsert
 ├── search.py              # セマンティック検索 CLI
 ├── mcp_server.py          # MCP サーバー (Claude Code から search_trending ツールを呼ぶ)
 ├── main.py                # 収集 + dedup + ingest オーケストレーション
 ├── models.py              # Repo データクラス
-└── requirements.txt
+├── requirements.txt
+├── requirements-dev.txt   # ruff / pyright / pytest
+└── ruff.toml              # lint 設定
 ```
 
 ## セットアップ
@@ -99,13 +105,14 @@ set -a && source .env && set +a
 }
 ```
 
-## MINIPC cron (自動収集)
+## MINIPC cron (自動収集・自動デプロイ)
 
-毎日 07:00 JST (22:00 UTC) に `/home/yuki/oss-radar` で自動実行。  
-ログ: `/var/log/oss-radar.log`
+| cron | スケジュール | 内容 |
+|---|---|---|
+| 収集 | 毎日 07:00 JST (22:00 UTC) | `main.py` 実行 → ログ: `/var/log/oss-radar.log` |
+| デプロイ | 毎時 0 分 | `scripts/deploy.sh` (git pull + pip sync) → ログ: `/var/log/oss-radar-deploy.log` |
 
 ## 注意事項
 
 - `bestofjs.org` は公開 REST API を持たないため、GitHub Search API (JS/TS) で代替
-- `ossinsight.io` のコレクション API は現在 0 件返却 (エンドポイント要確認)
 - embedding-svc は `X-API-Key` ヘッダー + `collection`/`mode` フィールド必須
