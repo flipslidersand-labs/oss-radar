@@ -1,38 +1,43 @@
-"""ossinsight.io — コレクション別トレンドリポジトリ"""
+"""ossinsight.io — トレンドリポジトリ収集
+
+v1/trends/repos エンドポイント使用。
+旧 /v1/collections/{slug}/ranking/repos は廃止済み（404）。
+"""
 import httpx
 from datetime import datetime, timezone
 from models import Repo
 
-_BASE = "https://api.ossinsight.io/v1/collections/{slug}/ranking/repos"
+_BASE = "https://api.ossinsight.io/v1/trends/repos"
 
-COLLECTIONS = [
-    "open-source-database",
-    "javascript-framework",
-    "go-framework",
-    "rust-framework",
-    "ai-infra",
-    "devops-tool",
-]
+LANGUAGES = ["", "Go", "Rust", "Python", "TypeScript"]  # "" = 全言語
 
 
-def _fetch_collection(client: httpx.Client, slug: str, now: str) -> list[Repo]:
+def _fetch_lang(client: httpx.Client, lang: str, now: str) -> list[Repo]:
+    params: dict = {"limit": 100}
+    if lang:
+        params["language"] = lang
+
     try:
-        r = client.get(
-            _BASE.format(slug=slug),
-            params={"period": "past_28_days", "orderBy": "stars", "direction": "desc"},
-        )
+        r = client.get(_BASE, params=params)
         r.raise_for_status()
-    except httpx.HTTPStatusError:
+    except (httpx.HTTPStatusError, httpx.RequestError):
         return []
 
     repos = []
     for item in r.json().get("data", {}).get("rows", []):
+        full_name = item.get("repo_name", "")
+        if not full_name:
+            continue
+        try:
+            stars = int(item.get("stars", 0) or 0)
+        except (ValueError, TypeError):
+            stars = 0
         repos.append(Repo(
-            full_name=f"{item.get('repo_name', '')}",
+            full_name=full_name,
             description=item.get("description") or "",
-            stars=item.get("total_score", 0),
+            stars=stars,
             lang=item.get("primary_language"),
-            topics=[slug],
+            topics=[],
             license=None,
             source="ossinsight",
             fetched_at=now,
@@ -45,7 +50,7 @@ def collect() -> list[Repo]:
     repos: list[Repo] = []
 
     with httpx.Client(timeout=30.0) as client:
-        for slug in COLLECTIONS:
-            repos.extend(_fetch_collection(client, slug, now))
+        for lang in LANGUAGES:
+            repos.extend(_fetch_lang(client, lang, now))
 
     return repos
