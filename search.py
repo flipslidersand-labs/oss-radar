@@ -12,22 +12,27 @@ import click
 import httpx
 from dotenv import load_dotenv
 from qdrant_client import QdrantClient
-from qdrant_client.models import Filter, FieldCondition, MatchValue, Range
+from qdrant_client.models import Filter, FieldCondition, MatchValue, Range, Query
 
 load_dotenv()
 
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
 EMBED_URL = os.getenv("EMBED_URL", "http://192.168.68.63:9092/embed/batch")
+EMBED_API_KEY = os.getenv("EMBED_API_KEY", "")
+EMBED_COLLECTION = os.getenv("EMBED_COLLECTION", "sessions")
 COLLECTION = os.getenv("COLLECTION", "github-trending")
 
 
 def _embed_query(text: str) -> list[float]:
-    with httpx.Client(timeout=30.0) as client:
-        r = client.post(EMBED_URL, json={"texts": [text]})
+    headers = {"X-API-Key": EMBED_API_KEY} if EMBED_API_KEY else {}
+    with httpx.Client(timeout=60.0) as client:
+        r = client.post(
+            EMBED_URL,
+            json={"texts": [text], "collection": EMBED_COLLECTION, "mode": "search"},
+            headers=headers,
+        )
         r.raise_for_status()
-    data = r.json()
-    embeddings = data.get("embeddings", data)
-    return embeddings[0]
+    return r.json()["vectors"][0]
 
 
 def _build_filter(lang: str | None, license_: str | None, stars_min: int) -> Filter | None:
@@ -53,13 +58,13 @@ def search(query: str, lang: str | None, license_: str | None, stars_min: int, l
     client = QdrantClient(url=QDRANT_URL)
     filt = _build_filter(lang, license_, stars_min)
 
-    results = client.search(
+    results = client.query_points(
         collection_name=COLLECTION,
-        query_vector=vec,
+        query=vec,
         query_filter=filt,
         limit=limit,
         with_payload=True,
-    )
+    ).points
 
     if not results:
         click.echo("結果なし。まず `python main.py` で収集してください。")
