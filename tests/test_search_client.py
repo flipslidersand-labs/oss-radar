@@ -87,7 +87,7 @@ def test_search_calls_query_points():
     client, qdrant = _make_client()
     qdrant.query_points.return_value.points = []
 
-    with patch("oss_radar.query.embed_query", return_value=FAKE_VEC):
+    with patch.object(client, "_embed", return_value=FAKE_VEC):
         client.search("query text", "github-trending")
 
     qdrant.query_points.assert_called_once()
@@ -102,7 +102,7 @@ def test_search_passes_filters():
     client, qdrant = _make_client()
     qdrant.query_points.return_value.points = []
 
-    with patch("oss_radar.query.embed_query", return_value=FAKE_VEC):
+    with patch.object(client, "_embed", return_value=FAKE_VEC):
         client.search("q", "col", lang="Go", license_="MIT", stars_min=500)
 
     kwargs = qdrant.query_points.call_args.kwargs
@@ -116,7 +116,7 @@ def test_search_no_filter_when_defaults():
     client, qdrant = _make_client()
     qdrant.query_points.return_value.points = []
 
-    with patch("oss_radar.query.embed_query", return_value=FAKE_VEC):
+    with patch.object(client, "_embed", return_value=FAKE_VEC):
         client.search("q", "col")
 
     kwargs = qdrant.query_points.call_args.kwargs
@@ -129,7 +129,7 @@ def test_search_returns_points():
     fake_point.score = 0.95
     qdrant.query_points.return_value.points = [fake_point]
 
-    with patch("oss_radar.query.embed_query", return_value=FAKE_VEC):
+    with patch.object(client, "_embed", return_value=FAKE_VEC):
         results = client.search("q", "col")
 
     assert len(results) == 1
@@ -140,7 +140,7 @@ def test_search_custom_limit():
     client, qdrant = _make_client()
     qdrant.query_points.return_value.points = []
 
-    with patch("oss_radar.query.embed_query", return_value=FAKE_VEC):
+    with patch.object(client, "_embed", return_value=FAKE_VEC):
         client.search("q", "col", limit=25)
 
     assert qdrant.query_points.call_args.kwargs["limit"] == 25
@@ -152,9 +152,16 @@ def test_search_client_reuses_qdrant_instance():
     qdrant_mock.query_points.return_value.points = []
     client, _ = _make_client(qdrant_mock)
 
-    with patch("oss_radar.query.embed_query", return_value=FAKE_VEC):
+    with patch.object(client, "_embed", return_value=FAKE_VEC):
         client.search("q1", "col")
         client.search("q2", "col")
 
     assert qdrant_mock.query_points.call_count == 2
     assert client._qdrant is qdrant_mock
+
+
+def test_search_client_has_persistent_http_client():
+    """SearchClient が httpx.Client を _http として保持する"""
+    client, _ = _make_client()
+    assert hasattr(client, "_http")
+    assert isinstance(client._http, httpx.Client)
