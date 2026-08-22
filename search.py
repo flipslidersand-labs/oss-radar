@@ -7,9 +7,10 @@ Usage:
     python search.py "MLパイプライン" --license MIT --stars-min 500
 """
 import os
-import sys
+
 import click
 from dotenv import load_dotenv
+
 from oss_radar.query import SearchClient
 
 load_dotenv()

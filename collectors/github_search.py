@@ -1,6 +1,8 @@
 """GitHub Search API — 全言語トレンド (stars/updated ソート)"""
-import httpx
 from datetime import datetime, timedelta, timezone
+
+import httpx
+
 from models import Repo
 
 _BASE = "https://api.github.com/search/repositories"

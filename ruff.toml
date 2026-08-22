@@ -1,0 +1,15 @@
+line-length = 120
+
+[lint]
+select = ["E", "F", "I", "UP", "BLE"]
+ignore = [
+    "EXE001",  # shebang without executable bit — fine in dev/venv
+]
+
+[lint.per-file-ignores]
+# オーケストレーター: コレクター単体の失敗で全体を止めないための意図的な broad catch
+"main.py" = ["BLE001"]
+# MCP サーバー: ツール呼び出しエラーを isError で返すための意図的な broad catch
+"mcp_server.py" = ["BLE001"]
+# TODO(#24): 型付きエラーハンドリングに移行予定
+"collectors/bestofjs.py" = ["BLE001"]
