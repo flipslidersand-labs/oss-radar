@@ -21,6 +21,16 @@ EMBED_COLLECTION = os.getenv("EMBED_COLLECTION", "sessions")  # embedding-svc �
 COLLECTION = os.getenv("COLLECTION", "github-trending")
 
 
+def _check_env(dry_run: bool) -> None:
+    warnings = []
+    if not dry_run and not EMBED_API_KEY:
+        warnings.append("EMBED_API_KEY が未設定です。embedding-svc の認証に失敗します (.env を確認してください)")
+    if not dry_run and "192.168.68" in EMBED_URL and not os.getenv("EMBED_URL"):
+        warnings.append(f"EMBED_URL がデフォルト値 ({EMBED_URL}) のままです。外部ネットワークからは到達できません")
+    for w in warnings:
+        click.echo(f"[WARN] {w}", err=True)
+
+
 def dedup(repos) -> list:
     seen: set[str] = set()
     result = []
@@ -40,6 +50,7 @@ def main(skip_ossinsight: bool, skip_bestofjs: bool, days_back: int, dry_run: bo
     from collectors import bestofjs, gh_trending, github_search, ossinsight
     from ingest import ingest
 
+    _check_env(dry_run)
     all_repos = []
 
     # 1. GitHub Search API
