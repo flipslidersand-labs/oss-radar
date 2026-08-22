@@ -8,7 +8,12 @@ _BASE = "https://github.com/trending"
 
 
 def _parse_stars(text: str) -> int:
-    text = text.strip().replace(",", "").replace("k", "000").replace("K", "000")
+    text = text.strip().replace(",", "").lower()
+    if text.endswith("k"):
+        try:
+            return int(float(text[:-1]) * 1000)
+        except ValueError:
+            return 0
     try:
         return int(text)
     except ValueError:
