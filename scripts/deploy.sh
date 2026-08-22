@@ -26,12 +26,13 @@ log "[deploy] updating ${LOCAL:0:7} → ${REMOTE:0:7}"
 git pull origin main --ff-only --quiet
 log "[deploy] pull done"
 
-# pip sync (差分のみ)
-if [ -f .venv/bin/pip ]; then
-    .venv/bin/pip install -r requirements.txt -q
-    log "[deploy] pip sync done"
-else
-    log "[deploy] .venv not found — skip pip sync"
+# pip sync (venv がなければ作成してから install)
+if [ ! -f .venv/bin/pip ]; then
+    log "[deploy] .venv not found — creating venv"
+    python3 -m venv .venv
+    log "[deploy] venv created"
 fi
+.venv/bin/pip install -r requirements.txt -q
+log "[deploy] pip sync done"
 
 log "[deploy] complete"
