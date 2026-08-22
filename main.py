@@ -7,7 +7,7 @@ Usage:
     python main.py --dry-run          # dedup 結果だけ表示、Qdrant には書かない
 """
 import os
-import sys
+
 import click
 from dotenv import load_dotenv
 
@@ -37,7 +37,7 @@ def dedup(repos) -> list:
 @click.option("--days-back", default=7, type=int, help="GitHub Search: 何日前まで対象")
 @click.option("--dry-run", is_flag=True, default=False, help="Qdrant に書かず結果だけ表示")
 def main(skip_ossinsight: bool, skip_bestofjs: bool, days_back: int, dry_run: bool):
-    from collectors import github_search, gh_trending, bestofjs, ossinsight
+    from collectors import bestofjs, gh_trending, github_search, ossinsight
     from ingest import ingest
 
     all_repos = []

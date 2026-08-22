@@ -29,6 +29,7 @@ from dotenv import load_dotenv
 from mcp import types
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
+
 from oss_radar.query import SearchClient
 
 load_dotenv()
