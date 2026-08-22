@@ -44,6 +44,8 @@ def collect(lang: str = "", since: str = "daily") -> list[Repo]:
         if not name_tag:
             continue
         full_name = name_tag.get("href", "").lstrip("/")
+        if "/" not in full_name:
+            continue
 
         desc_tag = article.select_one("p")
         description = desc_tag.get_text(strip=True) if desc_tag else ""
