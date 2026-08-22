@@ -1,4 +1,5 @@
 """github.com/trending スクレイパー — 全言語トレンドページ"""
+import sys
 from datetime import datetime, timezone
 
 import httpx
@@ -66,5 +67,12 @@ def collect(lang: str = "", since: str = "daily") -> list[Repo]:
             source="gh_trending",
             fetched_at=now,
         ))
+
+    if not repos:
+        print(
+            f"[gh_trending] WARNING: 0 repos scraped (since={since}, lang={lang!r})"
+            " — HTML 構造変更の可能性",
+            file=sys.stderr,
+        )
 
     return repos
