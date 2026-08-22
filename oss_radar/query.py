@@ -49,6 +49,17 @@ class SearchClient:
         self._api_key = api_key
         self._embed_collection = embed_collection
         self._qdrant = QdrantClient(url=qdrant_url)
+        self._http = httpx.Client(timeout=60.0)
+
+    def _embed(self, text: str) -> list[float]:
+        headers = {"X-API-Key": self._api_key} if self._api_key else {}
+        r = self._http.post(
+            self._embed_url,
+            json={"texts": [text], "collection": self._embed_collection, "mode": "search"},
+            headers=headers,
+        )
+        r.raise_for_status()
+        return r.json()["vectors"][0]
 
     def search(
         self,
@@ -59,7 +70,7 @@ class SearchClient:
         stars_min: int = 0,
         limit: int = 10,
     ) -> list:
-        vec = embed_query(query, self._embed_url, self._api_key, self._embed_collection)
+        vec = self._embed(query)
         filt = build_filter(lang, license_, stars_min)
         return self._qdrant.query_points(
             collection_name=collection,
