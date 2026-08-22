@@ -3,8 +3,10 @@
 bestofjs.org は公開 REST API を持たないため GitHub Search API で代替。
 stars:>500 の JS/TS リポジトリを週次更新順で取得する。
 """
-import httpx
 from datetime import datetime, timedelta, timezone
+
+import httpx
+
 from models import Repo
 
 _BASE = "https://api.github.com/search/repositories"

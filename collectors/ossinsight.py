@@ -3,8 +3,10 @@
 v1/trends/repos エンドポイント使用。
 旧 /v1/collections/{slug}/ranking/repos は廃止済み（404）。
 """
-import httpx
 from datetime import datetime, timezone
+
+import httpx
+
 from models import Repo
 
 _BASE = "https://api.ossinsight.io/v1/trends/repos"

@@ -1,7 +1,6 @@
-from dataclasses import dataclass, field
-from typing import Optional
 import hashlib
 import uuid
+from dataclasses import dataclass
 
 
 @dataclass
@@ -9,9 +8,9 @@ class Repo:
     full_name: str
     description: str
     stars: int
-    lang: Optional[str]
+    lang: str | None
     topics: list[str]
-    license: Optional[str]
+    license: str | None
     source: str  # github_search | gh_trending | bestofjs | ossinsight
     fetched_at: str  # ISO8601
 

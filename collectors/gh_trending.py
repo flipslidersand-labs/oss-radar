@@ -1,7 +1,9 @@
 """github.com/trending スクレイパー — 全言語トレンドページ"""
+from datetime import datetime, timezone
+
 import httpx
 from bs4 import BeautifulSoup
-from datetime import datetime, timezone
+
 from models import Repo
 
 _BASE = "https://github.com/trending"
