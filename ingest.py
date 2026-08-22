@@ -3,6 +3,7 @@ import httpx
 from qdrant_client import QdrantClient
 from qdrant_client.models import (
     Distance,
+    PayloadSchemaType,
     PointStruct,
     VectorParams,
 )
@@ -27,12 +28,26 @@ def _embed(
     return r.json()["vectors"]
 
 
+_PAYLOAD_INDEXES: list[tuple[str, PayloadSchemaType]] = [
+    ("lang", PayloadSchemaType.KEYWORD),
+    ("source", PayloadSchemaType.KEYWORD),
+    ("license", PayloadSchemaType.KEYWORD),
+    ("stars", PayloadSchemaType.INTEGER),
+]
+
+
 def _ensure_collection(client: QdrantClient, collection: str) -> None:
     existing = {c.name for c in client.get_collections().collections}
     if collection not in existing:
         client.create_collection(
             collection_name=collection,
             vectors_config=VectorParams(size=VECTOR_SIZE, distance=Distance.COSINE),
+        )
+    for field, schema_type in _PAYLOAD_INDEXES:
+        client.create_payload_index(
+            collection_name=collection,
+            field_name=field,
+            field_schema=schema_type,
         )
 
 
