@@ -20,6 +20,7 @@ oss-radar/
 │   └── ossinsight.py      # ossinsight.io コレクション別
 ├── ingest.py              # embed + Qdrant upsert
 ├── search.py              # セマンティック検索 CLI
+├── mcp_server.py          # MCP サーバー (Claude Code から search_trending ツールを呼ぶ)
 ├── main.py                # 収集 + dedup + ingest オーケストレーション
 ├── models.py              # Repo データクラス
 └── requirements.txt
@@ -72,6 +73,30 @@ set -a && source .env && set +a
 # フィルタ付き
 .venv/bin/python search.py "組み込みやすいライブラリ" --lang Rust --limit 5
 .venv/bin/python search.py "MLパイプライン" --license MIT --stars-min 500
+```
+
+## MCP サーバー (Claude Code 連携)
+
+`mcp_server.py` を起動すると、Claude Code から `search_trending` ツールで直接検索できる。
+
+`.claude/settings.json` への登録例:
+
+```json
+{
+  "mcpServers": {
+    "oss-radar": {
+      "command": "python",
+      "args": ["/path/to/oss-radar/mcp_server.py"],
+      "env": {
+        "QDRANT_URL": "http://localhost:6333",
+        "EMBED_URL": "http://your-embed-svc:9092/embed/batch",
+        "EMBED_API_KEY": "xxxx",
+        "EMBED_COLLECTION": "sessions",
+        "COLLECTION": "github-trending"
+      }
+    }
+  }
+}
 ```
 
 ## MINIPC cron (自動収集)
