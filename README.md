@@ -112,6 +112,24 @@ set -a && source .env && set +a
 | 収集 | 毎日 07:00 JST (22:00 UTC) | `main.py` 実行 → ログ: `/var/log/oss-radar.log` |
 | デプロイ | 毎時 0 分 | `scripts/deploy.sh` (git pull + pip sync) → ログ: `/var/log/oss-radar-deploy.log` |
 
+## Operations
+
+### MINIPC logrotate デプロイ
+
+`/var/log/oss-radar.log` および `/var/log/oss-radar-deploy.log` のローテーション設定を MINIPC に配置する:
+
+```bash
+sudo cp scripts/logrotate-oss-radar.conf /etc/logrotate.d/oss-radar
+```
+
+設定内容: weekly / rotate 4 / compress / missingok / notifempty
+
+動作確認:
+
+```bash
+sudo logrotate -d /etc/logrotate.d/oss-radar
+```
+
 ## 注意事項
 
 - `bestofjs.org` は公開 REST API を持たないため、GitHub Search API (JS/TS) で代替
