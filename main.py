@@ -6,7 +6,11 @@ Usage:
     python main.py --skip-ossinsight  # ossinsight をスキップ
     python main.py --dry-run          # dedup 結果だけ表示、Qdrant には書かない
 """
+import json
 import os
+import sys
+import time
+from datetime import datetime, timezone
 
 import click
 from dotenv import load_dotenv
@@ -51,7 +55,10 @@ def main(skip_ossinsight: bool, skip_bestofjs: bool, days_back: int, dry_run: bo
     from ingest import ingest
 
     _check_env(dry_run)
+    t_start = time.monotonic()
     all_repos = []
+    source_counts: dict[str, int] = {}
+    errors: list[dict] = []
 
     # 1. GitHub Search API
     if GITHUB_TOKEN:
@@ -60,20 +67,27 @@ def main(skip_ossinsight: bool, skip_bestofjs: bool, days_back: int, dry_run: bo
             repos = github_search.collect(GITHUB_TOKEN, days_back=days_back)
             click.echo(f"  → {len(repos)} repos")
             all_repos.extend(repos)
+            source_counts["github_search"] = len(repos)
         except Exception as e:
             click.echo(f"  ✗ {e}", err=True)
+            errors.append({"source": "github_search", "error": str(e)})
+            source_counts["github_search"] = 0
     else:
         click.echo("[1/4] GitHub Search API … GITHUB_TOKEN 未設定、スキップ", err=True)
+        source_counts["github_search"] = 0
 
     # 2. github.com/trending scrape
     click.echo("[2/4] github.com/trending ...")
+    source_counts["gh_trending"] = 0
     for since in ("daily", "weekly"):
         try:
             repos = gh_trending.collect(since=since)
             click.echo(f"  {since}: {len(repos)} repos")
             all_repos.extend(repos)
+            source_counts["gh_trending"] += len(repos)
         except Exception as e:
             click.echo(f"  ✗ {since}: {e}", err=True)
+            errors.append({"source": f"gh_trending/{since}", "error": str(e)})
 
     # 3. bestofjs.org
     if not skip_bestofjs:
@@ -82,10 +96,14 @@ def main(skip_ossinsight: bool, skip_bestofjs: bool, days_back: int, dry_run: bo
             repos = bestofjs.collect(token=GITHUB_TOKEN, days_back=days_back)
             click.echo(f"  → {len(repos)} repos")
             all_repos.extend(repos)
+            source_counts["bestofjs"] = len(repos)
         except Exception as e:
             click.echo(f"  ✗ {e}", err=True)
+            errors.append({"source": "bestofjs", "error": str(e)})
+            source_counts["bestofjs"] = 0
     else:
         click.echo("[3/4] bestofjs … スキップ")
+        source_counts["bestofjs"] = 0
 
     # 4. ossinsight.io
     if not skip_ossinsight:
@@ -94,10 +112,14 @@ def main(skip_ossinsight: bool, skip_bestofjs: bool, days_back: int, dry_run: bo
             repos = ossinsight.collect()
             click.echo(f"  → {len(repos)} repos")
             all_repos.extend(repos)
+            source_counts["ossinsight"] = len(repos)
         except Exception as e:
             click.echo(f"  ✗ {e}", err=True)
+            errors.append({"source": "ossinsight", "error": str(e)})
+            source_counts["ossinsight"] = 0
     else:
         click.echo("[4/4] ossinsight … スキップ")
+        source_counts["ossinsight"] = 0
 
     deduped = dedup(all_repos)
     click.echo(f"\n合計: {len(all_repos)} → dedup後: {len(deduped)}")
@@ -106,11 +128,49 @@ def main(skip_ossinsight: bool, skip_bestofjs: bool, days_back: int, dry_run: bo
         click.echo("\n[dry-run] Qdrant への書き込みをスキップ")
         for r in deduped[:10]:
             click.echo(f"  {r.stars:>6}★  {r.full_name}  [{r.lang}]  {r.description[:60]}")
+        _emit_summary(
+            source_counts=source_counts,
+            total_raw=len(all_repos),
+            deduped=len(deduped),
+            upserted=0,
+            errors=errors,
+            elapsed_sec=time.monotonic() - t_start,
+        )
         return
 
     click.echo(f"\nQdrant ({COLLECTION}) へ ingest ...")
     count = ingest(deduped, QDRANT_URL, EMBED_URL, COLLECTION, EMBED_API_KEY, EMBED_COLLECTION)
     click.echo(f"完了: {count} points upserted")
+
+    _emit_summary(
+        source_counts=source_counts,
+        total_raw=len(all_repos),
+        deduped=len(deduped),
+        upserted=count,
+        errors=errors,
+        elapsed_sec=time.monotonic() - t_start,
+    )
+
+
+def _emit_summary(
+    *,
+    source_counts: dict[str, int],
+    total_raw: int,
+    deduped: int,
+    upserted: int,
+    errors: list[dict],
+    elapsed_sec: float,
+) -> None:
+    summary = {
+        "date": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "sources": source_counts,
+        "total_raw": total_raw,
+        "deduped": deduped,
+        "upserted": upserted,
+        "errors": errors,
+        "elapsed_sec": round(elapsed_sec, 2),
+    }
+    sys.stderr.write(json.dumps(summary, ensure_ascii=False) + "\n")
 
 
 if __name__ == "__main__":
