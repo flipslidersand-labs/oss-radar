@@ -4,7 +4,7 @@ search.py と mcp_server.py の両方から使用する。
 """
 import httpx
 from qdrant_client import QdrantClient
-from qdrant_client.models import FieldCondition, Filter, MatchValue, Range
+from qdrant_client.models import DatetimeRange, FieldCondition, Filter, MatchValue, Range
 
 
 def embed_query(
@@ -24,7 +24,13 @@ def embed_query(
     return r.json()["vectors"][0]
 
 
-def build_filter(lang: str | None, license_: str | None, stars_min: int) -> Filter | None:
+def build_filter(
+    lang: str | None,
+    license_: str | None,
+    stars_min: int,
+    source: str | None = None,
+    since: str | None = None,
+) -> Filter | None:
     conditions = []
     if lang:
         conditions.append(FieldCondition(key="lang", match=MatchValue(value=lang)))
@@ -32,6 +38,10 @@ def build_filter(lang: str | None, license_: str | None, stars_min: int) -> Filt
         conditions.append(FieldCondition(key="license", match=MatchValue(value=license_)))
     if stars_min > 0:
         conditions.append(FieldCondition(key="stars", range=Range(gte=stars_min)))
+    if source:
+        conditions.append(FieldCondition(key="source", match=MatchValue(value=source)))
+    if since:
+        conditions.append(FieldCondition(key="fetched_at", range=DatetimeRange(gte=since)))
     return Filter(must=conditions) if conditions else None
 
 
@@ -68,10 +78,12 @@ class SearchClient:
         lang: str | None = None,
         license_: str | None = None,
         stars_min: int = 0,
+        source: str | None = None,
+        since: str | None = None,
         limit: int = 10,
     ) -> list:
         vec = self._embed(query)
-        filt = build_filter(lang, license_, stars_min)
+        filt = build_filter(lang, license_, stars_min, source=source, since=since)
         return self._qdrant.query_points(
             collection_name=collection,
             query=vec,

@@ -79,6 +79,10 @@ set -a && source .env && set +a
 # フィルタ付き
 .venv/bin/python search.py "組み込みやすいライブラリ" --lang Rust --limit 5
 .venv/bin/python search.py "MLパイプライン" --license MIT --stars-min 500
+
+# 収集元・期間フィルタ
+.venv/bin/python search.py "stream processing" --source ossinsight
+.venv/bin/python search.py "Go framework" --since 2026-08-20
 ```
 
 ## MCP サーバー (Claude Code 連携)

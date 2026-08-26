@@ -53,3 +53,36 @@ def test_empty_string_lang_excluded():
 
 def test_empty_string_license_excluded():
     assert build_filter(None, "", 0) is None
+
+
+def test_source_filter():
+    f = build_filter(None, None, 0, source="ossinsight")
+    assert f is not None
+    assert len(f.must) == 1
+    assert f.must[0].key == "source"
+    assert f.must[0].match.value == "ossinsight"
+
+
+def test_since_filter():
+    from datetime import datetime
+    f = build_filter(None, None, 0, since="2026-08-20")
+    assert f is not None
+    assert len(f.must) == 1
+    assert f.must[0].key == "fetched_at"
+    assert f.must[0].range.gte == datetime(2026, 8, 20)
+
+
+def test_source_and_since_combined():
+    f = build_filter(None, None, 0, source="github-trending", since="2026-08-01")
+    assert f is not None
+    assert len(f.must) == 2
+    keys = {c.key for c in f.must}
+    assert keys == {"source", "fetched_at"}
+
+
+def test_all_five_filters():
+    f = build_filter("Go", "MIT", 100, source="ossinsight", since="2026-08-20")
+    assert f is not None
+    assert len(f.must) == 5
+    keys = {c.key for c in f.must}
+    assert keys == {"lang", "license", "stars", "source", "fetched_at"}

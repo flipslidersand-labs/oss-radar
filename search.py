@@ -5,6 +5,8 @@ Usage:
     python search.py "ストリーム処理の設計参考になるOSS"
     python search.py "組み込みやすいGoライブラリ" --lang Go --limit 10
     python search.py "MLパイプライン" --license MIT --stars-min 500
+    python search.py "stream processing" --source ossinsight
+    python search.py "Go framework" --since 2026-08-20
 """
 import os
 
@@ -27,11 +29,14 @@ COLLECTION = os.getenv("COLLECTION", "github-trending")
 @click.option("--lang", default=None, help="言語フィルタ (例: Go, Python, Rust)")
 @click.option("--license", "license_", default=None, help="ライセンスフィルタ (例: MIT, Apache-2.0)")
 @click.option("--stars-min", default=0, type=int, help="最低スター数")
+@click.option("--source", default=None, help="収集元フィルタ (例: ossinsight, github-trending)")
+@click.option("--since", default=None, help="収集日時フィルタ YYYY-MM-DD (fetched_at >= since)")
 @click.option("--limit", default=10, type=int, help="表示件数")
-def search(query: str, lang: str | None, license_: str | None, stars_min: int, limit: int):
+def search(query: str, lang: str | None, license_: str | None, stars_min: int,
+           source: str | None, since: str | None, limit: int):
     client = SearchClient(QDRANT_URL, EMBED_URL, EMBED_API_KEY, EMBED_COLLECTION)
     results = client.search(query, COLLECTION, lang=lang, license_=license_,
-                            stars_min=stars_min, limit=limit)
+                            stars_min=stars_min, source=source, since=since, limit=limit)
 
     if not results:
         click.echo("結果なし。まず `python main.py` で収集してください。")
