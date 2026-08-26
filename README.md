@@ -134,6 +134,28 @@ sudo cp scripts/logrotate-oss-radar.conf /etc/logrotate.d/oss-radar
 sudo logrotate -d /etc/logrotate.d/oss-radar
 ```
 
+### 週次ヘルスチェック登録方法
+
+`~/.config/oss-radar/env` に以下を設定:
+
+```bash
+QDRANT_URL=http://192.168.68.63:6333
+EMBED_API_URL=http://192.168.68.63:9092
+COLLECTION=github-trending
+DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/xxxx/yyyy
+```
+
+MINIPC の crontab に追加 (`crontab -e`):
+
+```cron
+0 8 * * 0 bash ~/oss-radar/scripts/oss-radar-health.sh >> /var/log/oss-radar-health.log 2>&1
+```
+
+チェック内容:
+
+- embed サービス (`EMBED_API_URL/health`) の疎通確認
+- Qdrant `github-trending` コレクションの `points_count` を前回実行時と比較
+- 0 件以上増加していない場合は Discord に警告通知
 ## 注意事項
 
 - `bestofjs.org` は公開 REST API を持たないため、GitHub Search API (JS/TS) で代替
