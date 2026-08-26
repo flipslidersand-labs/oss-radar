@@ -70,6 +70,14 @@ SEARCH_SCHEMA = {
             "description": "最低スター数（デフォルト: 0）",
             "default": 0,
         },
+        "source": {
+            "type": "string",
+            "description": "収集元フィルタ（例: ossinsight, github-trending）。省略時はフィルタなし",
+        },
+        "since": {
+            "type": "string",
+            "description": "収集日時フィルタ YYYY-MM-DD。fetched_at がこの日時以降のものに絞る。省略時はフィルタなし",
+        },
         "limit": {
             "type": "integer",
             "description": "返却件数（デフォルト: 10、最大: 50）",
@@ -107,6 +115,8 @@ async def on_call_tool(ctx, params) -> types.CallToolResult:
     lang: str | None = args.get("lang")
     license_: str | None = args.get("license")
     stars_min: int = int(args.get("stars_min", 0))
+    source: str | None = args.get("source")
+    since: str | None = args.get("since")
     limit: int = min(int(args.get("limit", 10)), 50)
 
     if not query:
@@ -118,7 +128,7 @@ async def on_call_tool(ctx, params) -> types.CallToolResult:
     try:
         results = _get_client().search(
             query, COLLECTION, lang=lang, license_=license_,
-            stars_min=stars_min, limit=limit,
+            stars_min=stars_min, source=source, since=since, limit=limit,
         )
     except Exception as e:
         return types.CallToolResult(
