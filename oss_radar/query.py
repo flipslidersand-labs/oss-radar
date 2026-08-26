@@ -4,7 +4,7 @@ search.py と mcp_server.py の両方から使用する。
 """
 import httpx
 from qdrant_client import QdrantClient
-from qdrant_client.models import FieldCondition, Filter, MatchValue, Range
+from qdrant_client.models import DatetimeRange, FieldCondition, Filter, MatchValue, Range
 
 
 def embed_query(
@@ -41,7 +41,7 @@ def build_filter(
     if source:
         conditions.append(FieldCondition(key="source", match=MatchValue(value=source)))
     if since:
-        conditions.append(FieldCondition(key="fetched_at", range=Range(gte=since)))
+        conditions.append(FieldCondition(key="fetched_at", range=DatetimeRange(gte=since)))
     return Filter(must=conditions) if conditions else None
 
 
