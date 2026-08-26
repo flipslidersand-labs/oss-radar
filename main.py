@@ -53,21 +53,26 @@ def dedup(repos) -> list:
 def main(skip_ossinsight: bool, skip_bestofjs: bool, days_back: int, dry_run: bool):
     from collectors import bestofjs, gh_trending, github_search, ossinsight
     from ingest import ingest
+    from oss_radar.stats import record_snapshot
 
     _check_env(dry_run)
     t_start = time.monotonic()
     all_repos = []
     source_counts: dict[str, int] = {}
+    source_stats: dict[str, tuple[int, float]] = {}
     errors: list[dict] = []
 
     # 1. GitHub Search API
     if GITHUB_TOKEN:
         click.echo("[1/4] GitHub Search API ...")
         try:
+            t0 = time.monotonic()
             repos = github_search.collect(GITHUB_TOKEN, days_back=days_back)
+            elapsed = time.monotonic() - t0
             click.echo(f"  → {len(repos)} repos")
             all_repos.extend(repos)
             source_counts["github_search"] = len(repos)
+            source_stats["github_search"] = (len(repos), elapsed)
         except Exception as e:
             click.echo(f"  ✗ {e}", err=True)
             errors.append({"source": "github_search", "error": str(e)})
@@ -79,6 +84,7 @@ def main(skip_ossinsight: bool, skip_bestofjs: bool, days_back: int, dry_run: bo
     # 2. github.com/trending scrape
     click.echo("[2/4] github.com/trending ...")
     source_counts["gh_trending"] = 0
+    t0 = time.monotonic()
     for since in ("daily", "weekly"):
         try:
             repos = gh_trending.collect(since=since)
@@ -88,15 +94,19 @@ def main(skip_ossinsight: bool, skip_bestofjs: bool, days_back: int, dry_run: bo
         except Exception as e:
             click.echo(f"  ✗ {since}: {e}", err=True)
             errors.append({"source": f"gh_trending/{since}", "error": str(e)})
+    source_stats["gh_trending"] = (source_counts["gh_trending"], time.monotonic() - t0)
 
     # 3. bestofjs.org
     if not skip_bestofjs:
         click.echo("[3/4] JS/TS (bestofjs via GitHub Search) ...")
         try:
+            t0 = time.monotonic()
             repos = bestofjs.collect(token=GITHUB_TOKEN, days_back=days_back)
+            elapsed = time.monotonic() - t0
             click.echo(f"  → {len(repos)} repos")
             all_repos.extend(repos)
             source_counts["bestofjs"] = len(repos)
+            source_stats["bestofjs"] = (len(repos), elapsed)
         except Exception as e:
             click.echo(f"  ✗ {e}", err=True)
             errors.append({"source": "bestofjs", "error": str(e)})
@@ -109,10 +119,13 @@ def main(skip_ossinsight: bool, skip_bestofjs: bool, days_back: int, dry_run: bo
     if not skip_ossinsight:
         click.echo("[4/4] ossinsight.io ...")
         try:
+            t0 = time.monotonic()
             repos = ossinsight.collect()
+            elapsed = time.monotonic() - t0
             click.echo(f"  → {len(repos)} repos")
             all_repos.extend(repos)
             source_counts["ossinsight"] = len(repos)
+            source_stats["ossinsight"] = (len(repos), elapsed)
         except Exception as e:
             click.echo(f"  ✗ {e}", err=True)
             errors.append({"source": "ossinsight", "error": str(e)})
@@ -150,6 +163,15 @@ def main(skip_ossinsight: bool, skip_bestofjs: bool, days_back: int, dry_run: bo
         errors=errors,
         elapsed_sec=time.monotonic() - t_start,
     )
+
+    # weekly snapshot を oss-radar-stats コレクションへ記録
+    click.echo("\n[stats] oss-radar-stats へ snapshot 記録 ...")
+    for source, (n, elapsed) in source_stats.items():
+        try:
+            record_snapshot(QDRANT_URL, source, n, round(elapsed, 3))
+            click.echo(f"  {source}: {n} count, {elapsed:.1f}s")
+        except Exception as e:
+            click.echo(f"  ✗ stats upsert ({source}): {e}", err=True)
 
 
 def _emit_summary(
