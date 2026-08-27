@@ -19,7 +19,7 @@ load_dotenv()
 
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
-EMBED_URL = os.getenv("EMBED_URL", "http://192.168.68.63:9092/embed/batch")
+EMBED_URL = os.getenv("EMBED_URL", "http://localhost:9092/embed/batch")
 EMBED_API_KEY = os.getenv("EMBED_API_KEY", "")
 EMBED_COLLECTION = os.getenv("EMBED_COLLECTION", "sessions")  # embedding-svc モデルルーティング用
 COLLECTION = os.getenv("COLLECTION", "github-trending")
@@ -29,7 +29,7 @@ def _check_env(dry_run: bool) -> None:
     warnings = []
     if not dry_run and not EMBED_API_KEY:
         warnings.append("EMBED_API_KEY が未設定です。embedding-svc の認証に失敗します (.env を確認してください)")
-    if not dry_run and "192.168.68" in EMBED_URL and not os.getenv("EMBED_URL"):
+    if not dry_run and not EMBED_URL and not os.getenv("EMBED_URL"):
         warnings.append(f"EMBED_URL がデフォルト値 ({EMBED_URL}) のままです。外部ネットワークからは到達できません")
     for w in warnings:
         click.echo(f"[WARN] {w}", err=True)

@@ -13,7 +13,7 @@ Claude Code から直接 github-trending コレクションをセマンティッ
             "args": ["/path/to/oss-radar/mcp_server.py"],
             "env": {
                 "QDRANT_URL": "http://localhost:6333",
-                "EMBED_URL": "http://192.168.68.63:9092/embed/batch",
+                "EMBED_URL": "http://your-embed-svc:9092/embed/batch",
                 "EMBED_API_KEY": "xxxx",
                 "EMBED_COLLECTION": "sessions",
                 "COLLECTION": "github-trending"
@@ -35,7 +35,7 @@ from oss_radar.query import SearchClient
 load_dotenv()
 
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
-EMBED_URL = os.getenv("EMBED_URL", "http://192.168.68.63:9092/embed/batch")
+EMBED_URL = os.getenv("EMBED_URL", "http://localhost:9092/embed/batch")
 EMBED_API_KEY = os.getenv("EMBED_API_KEY", "")
 EMBED_COLLECTION = os.getenv("EMBED_COLLECTION", "sessions")
 COLLECTION = os.getenv("COLLECTION", "github-trending")
@@ -167,7 +167,7 @@ def _check_env() -> None:
     warnings = []
     if not EMBED_API_KEY:
         warnings.append("EMBED_API_KEY が未設定です。embedding-svc の認証に失敗します")
-    if "192.168.68" in EMBED_URL and not os.getenv("EMBED_URL"):
+    if not EMBED_URL and not os.getenv("EMBED_URL"):
         warnings.append(f"EMBED_URL がデフォルト値 ({EMBED_URL}) のままです")
     for w in warnings:
         print(f"[oss-radar MCP WARN] {w}", file=sys.stderr)

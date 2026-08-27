@@ -18,7 +18,7 @@ from oss_radar.query import SearchClient
 load_dotenv()
 
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
-EMBED_URL = os.getenv("EMBED_URL", "http://192.168.68.63:9092/embed/batch")
+EMBED_URL = os.getenv("EMBED_URL", "http://localhost:9092/embed/batch")
 EMBED_API_KEY = os.getenv("EMBED_API_KEY", "")
 EMBED_COLLECTION = os.getenv("EMBED_COLLECTION", "sessions")
 COLLECTION = os.getenv("COLLECTION", "github-trending")
