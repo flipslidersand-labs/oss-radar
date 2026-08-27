@@ -11,8 +11,8 @@ if [[ -f "${ENV_FILE}" ]]; then
   source "${ENV_FILE}"
 fi
 
-QDRANT_URL="${QDRANT_URL:-http://<internal-ip>:6333}"
-EMBED_API_URL="${EMBED_API_URL:-http://<internal-ip>:9092}"
+QDRANT_URL="${QDRANT_URL:-http://localhost:6333}"
+EMBED_API_URL="${EMBED_API_URL:-http://localhost:9092}"
 COLLECTION="${COLLECTION:-github-trending}"
 DISCORD_WEBHOOK_URL="${DISCORD_WEBHOOK_URL:-}"
 
