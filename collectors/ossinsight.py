@@ -3,11 +3,14 @@
 v1/trends/repos エンドポイント使用。
 旧 /v1/collections/{slug}/ranking/repos は廃止済み（404）。
 """
+import logging
 from datetime import datetime, timezone
 
 import httpx
 
 from models import Repo
+
+logger = logging.getLogger(__name__)
 
 _BASE = "https://api.ossinsight.io/v1/trends/repos"
 
@@ -22,11 +25,23 @@ def _fetch_lang(client: httpx.Client, lang: str, now: str) -> list[Repo]:
     try:
         r = client.get(_BASE, params=params)
         r.raise_for_status()
-    except (httpx.HTTPStatusError, httpx.RequestError):
+    except (httpx.HTTPStatusError, httpx.RequestError) as e:
+        logger.warning("ossinsight fetch error lang=%r: %s", lang or "all", e)
+        return []
+
+    # ossinsight の Warning ヘッダーを検出してログに記録
+    # 例: "199 - \"degraded data: star-event derived ranking unavailable\""
+    warning = r.headers.get("warning", "")
+    if warning:
+        logger.warning("ossinsight API warning lang=%r: %s", lang or "all", warning)
+
+    rows = r.json().get("data", {}).get("rows", [])
+    if not rows:
+        logger.warning("ossinsight returned 0 rows lang=%r (warning=%r)", lang or "all", warning or "none")
         return []
 
     repos = []
-    for item in r.json().get("data", {}).get("rows", []):
+    for item in rows:
         full_name = item.get("repo_name", "")
         if not full_name:
             continue
