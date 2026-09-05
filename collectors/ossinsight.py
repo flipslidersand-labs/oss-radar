@@ -35,7 +35,19 @@ def _fetch_lang(client: httpx.Client, lang: str, now: str) -> list[Repo]:
     if warning:
         logger.warning("ossinsight API warning lang=%r: %s", lang or "all", warning)
 
-    rows = r.json().get("data", {}).get("rows", [])
+    body = r.json()
+    dq = body.get("data_quality", {})
+    if dq.get("status") == "unavailable":
+        logger.warning(
+            "ossinsight ranking unavailable lang=%r: %s (since %s). Alternative: %s",
+            lang or "all",
+            dq.get("reason", "unknown"),
+            dq.get("unavailable_since", "?"),
+            dq.get("alternative", ""),
+        )
+        return []
+
+    rows = body.get("data", {}).get("rows", [])
     if not rows:
         logger.warning("ossinsight returned 0 rows lang=%r (warning=%r)", lang or "all", warning or "none")
         return []
