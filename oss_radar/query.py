@@ -2,9 +2,16 @@
 
 search.py と mcp_server.py の両方から使用する。
 """
+
 import httpx
 from qdrant_client import QdrantClient
-from qdrant_client.models import DatetimeRange, FieldCondition, Filter, MatchValue, Range
+from qdrant_client.models import (
+    DatetimeRange,
+    FieldCondition,
+    Filter,
+    MatchValue,
+    Range,
+)
 
 
 def embed_query(
@@ -35,13 +42,17 @@ def build_filter(
     if lang:
         conditions.append(FieldCondition(key="lang", match=MatchValue(value=lang)))
     if license_:
-        conditions.append(FieldCondition(key="license", match=MatchValue(value=license_)))
+        conditions.append(
+            FieldCondition(key="license", match=MatchValue(value=license_))
+        )
     if stars_min > 0:
         conditions.append(FieldCondition(key="stars", range=Range(gte=stars_min)))
     if source:
         conditions.append(FieldCondition(key="source", match=MatchValue(value=source)))
     if since:
-        conditions.append(FieldCondition(key="fetched_at", range=DatetimeRange(gte=since)))
+        conditions.append(
+            FieldCondition(key="fetched_at", range=DatetimeRange(gte=since))
+        )
     return Filter(must=conditions) if conditions else None
 
 
@@ -65,7 +76,11 @@ class SearchClient:
         headers = {"X-API-Key": self._api_key} if self._api_key else {}
         r = self._http.post(
             self._embed_url,
-            json={"texts": [text], "collection": self._embed_collection, "mode": "search"},
+            json={
+                "texts": [text],
+                "collection": self._embed_collection,
+                "mode": "search",
+            },
             headers=headers,
         )
         r.raise_for_status()

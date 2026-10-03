@@ -1,4 +1,5 @@
 """Embed + Qdrant upsert"""
+
 import httpx
 from qdrant_client import QdrantClient
 from qdrant_client.models import (
@@ -15,7 +16,10 @@ BATCH_SIZE = 64
 
 
 def _embed(
-    texts: list[str], embed_url: str, api_key: str = "", embed_collection: str = "sessions"
+    texts: list[str],
+    embed_url: str,
+    api_key: str = "",
+    embed_collection: str = "sessions",
 ) -> list[list[float]]:
     headers = {"X-API-Key": api_key} if api_key else {}
     with httpx.Client(timeout=180.0) as client:

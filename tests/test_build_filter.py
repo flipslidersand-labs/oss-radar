@@ -1,4 +1,5 @@
 """oss_radar.query.build_filter() のユニットテスト"""
+
 import sys
 from pathlib import Path
 
@@ -65,6 +66,7 @@ def test_source_filter():
 
 def test_since_filter():
     from datetime import datetime
+
     f = build_filter(None, None, 0, since="2026-08-20")
     assert f is not None
     assert len(f.must) == 1

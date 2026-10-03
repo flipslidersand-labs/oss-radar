@@ -6,6 +6,7 @@ Usage:
     python main.py --skip-ossinsight  # ossinsight をスキップ
     python main.py --dry-run          # dedup 結果だけ表示、Qdrant には書かない
 """
+
 import json
 import os
 import sys
@@ -21,16 +22,22 @@ GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
 EMBED_URL = os.getenv("EMBED_URL", "http://localhost:9092/embed/batch")
 EMBED_API_KEY = os.getenv("EMBED_API_KEY", "")
-EMBED_COLLECTION = os.getenv("EMBED_COLLECTION", "sessions")  # embedding-svc モデルルーティング用
+EMBED_COLLECTION = os.getenv(
+    "EMBED_COLLECTION", "sessions"
+)  # embedding-svc モデルルーティング用
 COLLECTION = os.getenv("COLLECTION", "github-trending")
 
 
 def _check_env(dry_run: bool) -> None:
     warnings = []
     if not dry_run and not EMBED_API_KEY:
-        warnings.append("EMBED_API_KEY が未設定です。embedding-svc の認証に失敗します (.env を確認してください)")
+        warnings.append(
+            "EMBED_API_KEY が未設定です。embedding-svc の認証に失敗します (.env を確認してください)"
+        )
     if not dry_run and not EMBED_URL and not os.getenv("EMBED_URL"):
-        warnings.append(f"EMBED_URL がデフォルト値 ({EMBED_URL}) のままです。外部ネットワークからは到達できません")
+        warnings.append(
+            f"EMBED_URL がデフォルト値 ({EMBED_URL}) のままです。外部ネットワークからは到達できません"
+        )
     for w in warnings:
         click.echo(f"[WARN] {w}", err=True)
 
@@ -49,7 +56,9 @@ def dedup(repos) -> list:
 @click.option("--skip-ossinsight", is_flag=True, default=False)
 @click.option("--skip-bestofjs", is_flag=True, default=False)
 @click.option("--days-back", default=7, type=int, help="GitHub Search: 何日前まで対象")
-@click.option("--dry-run", is_flag=True, default=False, help="Qdrant に書かず結果だけ表示")
+@click.option(
+    "--dry-run", is_flag=True, default=False, help="Qdrant に書かず結果だけ表示"
+)
 def main(skip_ossinsight: bool, skip_bestofjs: bool, days_back: int, dry_run: bool):
     from collectors import bestofjs, gh_trending, github_search, ossinsight
     from ingest import ingest
@@ -140,7 +149,9 @@ def main(skip_ossinsight: bool, skip_bestofjs: bool, days_back: int, dry_run: bo
     if dry_run:
         click.echo("\n[dry-run] Qdrant への書き込みをスキップ")
         for r in deduped[:10]:
-            click.echo(f"  {r.stars:>6}★  {r.full_name}  [{r.lang}]  {r.description[:60]}")
+            click.echo(
+                f"  {r.stars:>6}★  {r.full_name}  [{r.lang}]  {r.description[:60]}"
+            )
         _emit_summary(
             source_counts=source_counts,
             total_raw=len(all_repos),
@@ -152,7 +163,9 @@ def main(skip_ossinsight: bool, skip_bestofjs: bool, days_back: int, dry_run: bo
         return
 
     click.echo(f"\nQdrant ({COLLECTION}) へ ingest ...")
-    count = ingest(deduped, QDRANT_URL, EMBED_URL, COLLECTION, EMBED_API_KEY, EMBED_COLLECTION)
+    count = ingest(
+        deduped, QDRANT_URL, EMBED_URL, COLLECTION, EMBED_API_KEY, EMBED_COLLECTION
+    )
     click.echo(f"完了: {count} points upserted")
 
     _emit_summary(

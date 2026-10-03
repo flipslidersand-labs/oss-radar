@@ -1,4 +1,5 @@
 """main.dedup() のユニットテスト"""
+
 import sys
 from pathlib import Path
 

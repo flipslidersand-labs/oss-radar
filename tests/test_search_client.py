@@ -1,4 +1,5 @@
 """oss_radar.query — embed_query / SearchClient のユニットテスト"""
+
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -29,6 +30,7 @@ def _patch_httpx(response):
 
 
 # ── embed_query ───────────────────────────────────────────────────────────────
+
 
 def test_embed_query_returns_vector():
     patcher, mock_client = _patch_httpx(_mock_embed_response())
@@ -75,7 +77,10 @@ def test_embed_query_propagates_http_error():
 
 # ── SearchClient ──────────────────────────────────────────────────────────────
 
-def _make_client(qdrant_mock: MagicMock | None = None) -> tuple[SearchClient, MagicMock]:
+
+def _make_client(
+    qdrant_mock: MagicMock | None = None,
+) -> tuple[SearchClient, MagicMock]:
     if qdrant_mock is None:
         qdrant_mock = MagicMock()
     with patch("oss_radar.query.QdrantClient", return_value=qdrant_mock):
