@@ -58,11 +58,12 @@ def ingest(
     collection: str,
     embed_api_key: str = "",
     embed_collection: str = "sessions",
+    qdrant_api_key: str = "",
 ) -> int:
     if not repos:
         return 0
 
-    client = QdrantClient(url=qdrant_url)
+    client = QdrantClient(url=qdrant_url, api_key=qdrant_api_key or None)
     _ensure_collection(client, collection)
 
     upserted = 0
