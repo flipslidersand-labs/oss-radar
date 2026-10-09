@@ -27,10 +27,17 @@ notify() {
     echo "${message}" >&2
     return
   fi
-  curl -s -o /dev/null -w "%{http_code}" \
-    -H "Content-Type: application/json" \
-    -d "{\"content\": \"${message}\"}" \
-    "${DISCORD_WEBHOOK_URL}" || true
+  # Webhook URL は機密(トークン含む)のため curl の引数に載せない(ps / /proc/<pid>/cmdline 露出対策)。
+  # URL は -K - で標準入力の config として渡し、payload は jq で JSON エスケープして一時ファイル経由で渡す。
+  local payload
+  payload="$(mktemp)"
+  jq -n --arg content "${message}" '{content: $content}' > "${payload}"
+  printf 'url = "%s"\n' "${DISCORD_WEBHOOK_URL}" |
+    curl -s -o /dev/null -w "%{http_code}" \
+      -H "Content-Type: application/json" \
+      --data-binary "@${payload}" \
+      -K - || true
+  rm -f "${payload}"
 }
 
 # --------------------------------------------------------------------------
