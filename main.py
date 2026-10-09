@@ -15,6 +15,8 @@ from datetime import datetime, timezone
 import click
 from dotenv import load_dotenv
 
+from oss_radar.env_check import insecure_embed_url_warning
+
 load_dotenv()
 
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
@@ -31,6 +33,9 @@ def _check_env(dry_run: bool) -> None:
         warnings.append("EMBED_API_KEY が未設定です。embedding-svc の認証に失敗します (.env を確認してください)")
     if not dry_run and not EMBED_URL and not os.getenv("EMBED_URL"):
         warnings.append(f"EMBED_URL がデフォルト値 ({EMBED_URL}) のままです。外部ネットワークからは到達できません")
+    insecure = insecure_embed_url_warning(EMBED_URL, EMBED_API_KEY)
+    if not dry_run and insecure:
+        warnings.append(insecure)
     for w in warnings:
         click.echo(f"[WARN] {w}", err=True)
 
