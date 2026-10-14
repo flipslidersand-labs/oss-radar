@@ -30,6 +30,7 @@ from mcp import types
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
 
+from oss_radar.env_check import insecure_embed_url_warning
 from oss_radar.query import SearchClient
 
 load_dotenv()
@@ -169,6 +170,9 @@ def _check_env() -> None:
         warnings.append("EMBED_API_KEY が未設定です。embedding-svc の認証に失敗します")
     if not EMBED_URL and not os.getenv("EMBED_URL"):
         warnings.append(f"EMBED_URL がデフォルト値 ({EMBED_URL}) のままです")
+    insecure = insecure_embed_url_warning(EMBED_URL, EMBED_API_KEY)
+    if insecure:
+        warnings.append(insecure)
     for w in warnings:
         print(f"[oss-radar MCP WARN] {w}", file=sys.stderr)
 
