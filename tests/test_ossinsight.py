@@ -16,6 +16,10 @@ def _mock_client(status_code: int = 200, json_body: dict | None = None):
     response = MagicMock(spec=httpx.Response)
     response.status_code = status_code
     response.json.return_value = json_body or {}
+    # httpx.Response.headers はインスタンス属性(__init__ で設定)のため
+    # spec=httpx.Response(クラス) では dir() に現れず MagicMock が自動生成しない。
+    # 明示的に設定する必要がある。
+    response.headers = httpx.Headers()
     if status_code >= 400:
         response.raise_for_status.side_effect = httpx.HTTPStatusError(
             message=f"HTTP {status_code}",
