@@ -1,4 +1,5 @@
 """weekly snapshot: 収集件数を Qdrant oss-radar-stats コレクションへ upsert"""
+
 import hashlib
 from datetime import date
 

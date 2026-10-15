@@ -1,4 +1,5 @@
 """github.com/trending スクレイパー — 全言語トレンドページ"""
+
 import sys
 from datetime import datetime, timezone
 
@@ -57,16 +58,18 @@ def collect(lang: str = "", since: str = "daily") -> list[Repo]:
         stars_tag = article.select_one('a[href$="/stargazers"]')
         stars = _parse_stars(stars_tag.get_text()) if stars_tag else 0
 
-        repos.append(Repo(
-            full_name=full_name,
-            description=description,
-            stars=stars,
-            lang=language,
-            topics=[],
-            license=None,
-            source="gh_trending",
-            fetched_at=now,
-        ))
+        repos.append(
+            Repo(
+                full_name=full_name,
+                description=description,
+                stars=stars,
+                lang=language,
+                topics=[],
+                license=None,
+                source="gh_trending",
+                fetched_at=now,
+            )
+        )
 
     if not repos:
         print(

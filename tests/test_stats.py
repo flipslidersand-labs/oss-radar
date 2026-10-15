@@ -1,4 +1,5 @@
 """oss_radar/stats.py のユニットテスト"""
+
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -13,6 +14,7 @@ from oss_radar.stats import (
 )
 
 # ── _make_point_id ────────────────────────────────────────────────────────────
+
 
 def test_make_point_id_deterministic():
     """同じ (date, source) は常に同じ ID を返す"""
@@ -42,6 +44,7 @@ def test_make_point_id_is_int():
 
 # ── _ensure_stats_collection ──────────────────────────────────────────────────
 
+
 def test_ensure_stats_collection_creates_when_missing():
     client = MagicMock()
     col = MagicMock()
@@ -68,9 +71,11 @@ def test_ensure_stats_collection_skips_when_exists():
 
 # ── record_snapshot ───────────────────────────────────────────────────────────
 
+
 def test_record_snapshot_upserts_correct_payload():
-    with patch("oss_radar.stats.QdrantClient") as mock_qdrant_cls, \
-         patch("oss_radar.stats.date") as mock_date:
+    with patch("oss_radar.stats.QdrantClient") as mock_qdrant_cls, patch(
+        "oss_radar.stats.date"
+    ) as mock_date:
         mock_date.today.return_value.isoformat.return_value = "2026-08-26"
 
         mock_qdrant = MagicMock()
@@ -94,8 +99,9 @@ def test_record_snapshot_upserts_correct_payload():
 
 
 def test_record_snapshot_vector_is_dummy():
-    with patch("oss_radar.stats.QdrantClient") as mock_qdrant_cls, \
-         patch("oss_radar.stats.date") as mock_date:
+    with patch("oss_radar.stats.QdrantClient") as mock_qdrant_cls, patch(
+        "oss_radar.stats.date"
+    ) as mock_date:
         mock_date.today.return_value.isoformat.return_value = "2026-08-26"
 
         mock_qdrant = MagicMock()
@@ -111,8 +117,9 @@ def test_record_snapshot_vector_is_dummy():
 
 
 def test_record_snapshot_point_id_matches_helper():
-    with patch("oss_radar.stats.QdrantClient") as mock_qdrant_cls, \
-         patch("oss_radar.stats.date") as mock_date:
+    with patch("oss_radar.stats.QdrantClient") as mock_qdrant_cls, patch(
+        "oss_radar.stats.date"
+    ) as mock_date:
         mock_date.today.return_value.isoformat.return_value = "2026-08-26"
 
         mock_qdrant = MagicMock()

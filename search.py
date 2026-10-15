@@ -8,6 +8,7 @@ Usage:
     python search.py "stream processing" --source ossinsight
     python search.py "Go framework" --since 2026-08-20
 """
+
 import os
 
 import click
@@ -27,16 +28,40 @@ COLLECTION = os.getenv("COLLECTION", "github-trending")
 @click.command()
 @click.argument("query")
 @click.option("--lang", default=None, help="言語フィルタ (例: Go, Python, Rust)")
-@click.option("--license", "license_", default=None, help="ライセンスフィルタ (例: MIT, Apache-2.0)")
+@click.option(
+    "--license",
+    "license_",
+    default=None,
+    help="ライセンスフィルタ (例: MIT, Apache-2.0)",
+)
 @click.option("--stars-min", default=0, type=int, help="最低スター数")
-@click.option("--source", default=None, help="収集元フィルタ (例: ossinsight, github-trending)")
-@click.option("--since", default=None, help="収集日時フィルタ YYYY-MM-DD (fetched_at >= since)")
+@click.option(
+    "--source", default=None, help="収集元フィルタ (例: ossinsight, github-trending)"
+)
+@click.option(
+    "--since", default=None, help="収集日時フィルタ YYYY-MM-DD (fetched_at >= since)"
+)
 @click.option("--limit", default=10, type=int, help="表示件数")
-def search(query: str, lang: str | None, license_: str | None, stars_min: int,
-           source: str | None, since: str | None, limit: int):
+def search(
+    query: str,
+    lang: str | None,
+    license_: str | None,
+    stars_min: int,
+    source: str | None,
+    since: str | None,
+    limit: int,
+):
     client = SearchClient(QDRANT_URL, EMBED_URL, EMBED_API_KEY, EMBED_COLLECTION)
-    results = client.search(query, COLLECTION, lang=lang, license_=license_,
-                            stars_min=stars_min, source=source, since=since, limit=limit)
+    results = client.search(
+        query,
+        COLLECTION,
+        lang=lang,
+        license_=license_,
+        stars_min=stars_min,
+        source=source,
+        since=since,
+        limit=limit,
+    )
 
     if not results:
         click.echo("結果なし。まず `python main.py` で収集してください。")

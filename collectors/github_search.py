@@ -1,4 +1,5 @@
 """GitHub Search API — 全言語トレンド (stars/updated ソート)"""
+
 import sys
 import time
 from datetime import datetime, timedelta, timezone
@@ -28,8 +29,11 @@ def _get_page(client: httpx.Client, params: dict, headers: dict) -> dict:
                 )
                 return {}
             if 500 <= code < 600 and attempt < _MAX_RETRIES:
-                wait = 2 ** attempt
-                print(f"  [github_search] HTTP {code} — retry {attempt + 1}/{_MAX_RETRIES} in {wait}s", file=sys.stderr)
+                wait = 2**attempt
+                print(
+                    f"  [github_search] HTTP {code} — retry {attempt + 1}/{_MAX_RETRIES} in {wait}s",
+                    file=sys.stderr,
+                )
                 time.sleep(wait)
                 continue
             raise
@@ -37,7 +41,9 @@ def _get_page(client: httpx.Client, params: dict, headers: dict) -> dict:
 
 
 def collect(token: str, days_back: int = 7, pages: int = 3) -> list[Repo]:
-    since = (datetime.now(timezone.utc) - timedelta(days=days_back)).strftime("%Y-%m-%d")
+    since = (datetime.now(timezone.utc) - timedelta(days=days_back)).strftime(
+        "%Y-%m-%d"
+    )
     headers = {
         "Authorization": f"Bearer {token}",
         "Accept": "application/vnd.github+json",
@@ -60,15 +66,17 @@ def collect(token: str, days_back: int = 7, pages: int = 3) -> list[Repo]:
                 headers=headers,
             )
             for item in data.get("items", []):
-                repos.append(Repo(
-                    full_name=item["full_name"],
-                    description=item.get("description") or "",
-                    stars=item["stargazers_count"],
-                    lang=item.get("language"),
-                    topics=item.get("topics", []),
-                    license=(item.get("license") or {}).get("spdx_id"),
-                    source="github_search",
-                    fetched_at=now,
-                ))
+                repos.append(
+                    Repo(
+                        full_name=item["full_name"],
+                        description=item.get("description") or "",
+                        stars=item["stargazers_count"],
+                        lang=item.get("language"),
+                        topics=item.get("topics", []),
+                        license=(item.get("license") or {}).get("spdx_id"),
+                        source="github_search",
+                        fetched_at=now,
+                    )
+                )
 
     return repos

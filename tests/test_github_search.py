@@ -1,4 +1,5 @@
 """collectors.github_search — rate limit / retry ハンドリングのユニットテスト"""
+
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, call, patch
@@ -12,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "collectors"))
 from github_search import _get_page, collect
 
 # ── helpers ───────────────────────────────────────────────────────────────────
+
 
 def _make_response(status: int, body: dict | None = None, headers: dict | None = None):
     resp = MagicMock(spec=httpx.Response)
@@ -34,6 +36,7 @@ def _mock_client(*responses):
 
 
 # ── _get_page ─────────────────────────────────────────────────────────────────
+
 
 def test_get_page_success():
     payload = {"items": [{"full_name": "org/repo"}]}
