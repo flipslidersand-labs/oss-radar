@@ -115,10 +115,16 @@ async def on_call_tool(ctx, params) -> types.CallToolResult:
     query: str = args.get("query", "")
     lang: str | None = args.get("lang")
     license_: str | None = args.get("license")
-    stars_min: int = int(args.get("stars_min", 0))
     source: str | None = args.get("source")
     since: str | None = args.get("since")
-    limit: int = min(int(args.get("limit", 10)), 50)
+    try:
+        stars_min: int = int(args.get("stars_min", 0))
+        limit: int = min(int(args.get("limit", 10)), 50)
+    except (ValueError, TypeError):
+        return types.CallToolResult(
+            content=[types.TextContent(type="text", text="stars_min と limit は整数で指定してください")],
+            isError=True,
+        )
 
     if not query:
         return types.CallToolResult(
