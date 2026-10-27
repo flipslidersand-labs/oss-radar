@@ -55,3 +55,19 @@ class Post:
 
     def embed_text(self) -> str:
         return f"{self.title} | {self.source}"
+
+    def to_payload(self) -> dict:
+        return {
+            "url": self.url,
+            "title": self.title,
+            "score": self.score,
+            "source": self.source,
+            "fetched_at": self.fetched_at,
+            "discussion_url": self.discussion_url,
+            # search.py / ingest の既存インデックス・表示と互換 (Repo 用キーに写像)
+            "full_name": self.title,
+            "description": self.url,
+            "stars": self.score,
+            "lang": None,
+            "license": None,
+        }
