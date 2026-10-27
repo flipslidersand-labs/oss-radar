@@ -56,7 +56,7 @@ cp .env.example .env
 | `GITHUB_TOKEN` | GitHub PAT (rate limit relief for Search API) | `ghp_xxxx` |
 | `QDRANT_URL` | Qdrant connection URL | `http://localhost:6333` |
 | `EMBED_URL` | embedding-svc endpoint | `http://your-embed-svc:9092/embed/batch` |
-| `EMBED_API_KEY` | embedding-svc API key | `xxxx` |
+| `EMBED_API_KEY` | embedding-svc API key (use an `https://` `EMBED_URL` for non-local hosts — over `http://` the key is sent in plaintext; a startup warning is shown) | `xxxx` |
 | `EMBED_COLLECTION` | embedding-svc model routing | `sessions` |
 | `COLLECTION` | Qdrant collection name | `github-trending` |
 
@@ -221,7 +221,7 @@ cp .env.example .env
 | `GITHUB_TOKEN` | GitHub PAT (Search API レート制限緩和) | `ghp_xxxx` |
 | `QDRANT_URL` | Qdrant 接続先 | `http://localhost:6333` |
 | `EMBED_URL` | embedding-svc エンドポイント | `http://your-embed-svc:9092/embed/batch` |
-| `EMBED_API_KEY` | embedding-svc API キー | `xxxx` |
+| `EMBED_API_KEY` | embedding-svc API キー(localhost 以外は `https://` の `EMBED_URL` を推奨。`http://` だとキーが平文で流れ社内ネットワークでも盗聴リスクあり。起動時に警告を出す) | `xxxx` |
 | `EMBED_COLLECTION` | embedding-svc モデルルーティング用 | `sessions` |
 | `COLLECTION` | Qdrant コレクション名 | `github-trending` |
 

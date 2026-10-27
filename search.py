@@ -13,6 +13,7 @@ import os
 import click
 from dotenv import load_dotenv
 
+from oss_radar.env_check import insecure_embed_url_warning
 from oss_radar.query import SearchClient
 
 load_dotenv()
@@ -34,6 +35,9 @@ COLLECTION = os.getenv("COLLECTION", "github-trending")
 @click.option("--limit", default=10, type=int, help="表示件数")
 def search(query: str, lang: str | None, license_: str | None, stars_min: int,
            source: str | None, since: str | None, limit: int):
+    insecure = insecure_embed_url_warning(EMBED_URL, EMBED_API_KEY)
+    if insecure:
+        click.echo(f"[WARN] {insecure}", err=True)
     client = SearchClient(QDRANT_URL, EMBED_URL, EMBED_API_KEY, EMBED_COLLECTION)
     results = client.search(query, COLLECTION, lang=lang, license_=license_,
                             stars_min=stars_min, source=source, since=since, limit=limit)
