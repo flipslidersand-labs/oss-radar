@@ -63,7 +63,10 @@ fi
 
 echo "[INFO] Qdrant 件数チェック: ${QDRANT_URL}/collections/${COLLECTION}"
 # QDRANT_API_KEY は ps に露出させないよう -K - (stdin config) で渡す
-COLLECTION_INFO=$(printf 'header = "api-key: %s"\n' "${QDRANT_API_KEY}" |
+# curl config の二重引用符内では \ と " が特殊なので先にエスケープする
+KEY_ESC=${QDRANT_API_KEY//\\/\\\\}
+KEY_ESC=${KEY_ESC//\"/\\\"}
+COLLECTION_INFO=$(printf 'header = "api-key: %s"\n' "${KEY_ESC}" |
   curl -s --max-time 10 -K - \
     "${QDRANT_URL}/collections/${COLLECTION}" 2>/dev/null || echo "")
 
