@@ -10,7 +10,7 @@ import json
 import os
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import click
 from dotenv import load_dotenv
@@ -189,7 +189,7 @@ def _emit_summary(
     elapsed_sec: float,
 ) -> None:
     summary = {
-        "date": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "date": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "sources": source_counts,
         "total_raw": total_raw,
         "deduped": deduped,
