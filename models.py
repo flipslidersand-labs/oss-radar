@@ -38,3 +38,20 @@ class Repo:
             "source": self.source,
             "fetched_at": self.fetched_at,
         }
+
+
+@dataclass
+class Post:
+    """技術者コミュニティの投稿(HN/Zenn/はてブ等)。url を重複排除キーにする。"""
+    url: str
+    title: str
+    score: int
+    source: str  # hn | zenn | hatena
+    fetched_at: str  # ISO8601
+    discussion_url: str | None = None
+
+    def point_id(self) -> str:
+        return str(uuid.UUID(bytes=hashlib.md5(self.url.encode()).digest()))
+
+    def embed_text(self) -> str:
+        return f"{self.title} | {self.source}"
