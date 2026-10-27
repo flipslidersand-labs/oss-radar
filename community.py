@@ -40,7 +40,7 @@ def main(dry_run: bool):
         t0 = time.monotonic()
         try:
             posts = mod.collect()
-        except Exception as e:  # 1 ソースの失敗で全体を止めない
+        except Exception as e:  # noqa: BLE001  1 ソースの失敗で全体を止めない
             click.echo(f"  ✗ {name}: {e}", err=True)
             continue
         click.echo(f"{name}: {len(posts)} posts ({time.monotonic() - t0:.1f}s)")

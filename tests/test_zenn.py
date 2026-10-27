@@ -16,7 +16,8 @@ XML = """<?xml version="1.0"?><rss version="2.0"><channel>
 
 def test_parse_skips_incomplete_items():
     posts = _parse(XML, NOW)
-    assert [(p.title, p.url, p.source, p.score) for p in posts] == [("記事A", "https://zenn.dev/u/articles/a", "zenn", 0)]
+    got = [(p.title, p.url, p.source, p.score) for p in posts]
+    assert got == [("記事A", "https://zenn.dev/u/articles/a", "zenn", 0)]
 
 
 def test_parse_invalid_xml_returns_empty():

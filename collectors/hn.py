@@ -1,6 +1,6 @@
 """Hacker News — front page 収集 (Algolia API, キー不要)"""
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import httpx
 
@@ -31,7 +31,7 @@ def _parse(hits: list[dict], now: str) -> list[Post]:
 
 
 def collect(hits_per_page: int = 100) -> list[Post]:
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
     try:
         with httpx.Client(timeout=30.0, headers={"User-Agent": "oss-radar/1.0"}) as client:
             r = client.get(_URL, params={"tags": "front_page", "hitsPerPage": hits_per_page})

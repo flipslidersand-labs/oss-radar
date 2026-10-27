@@ -1,7 +1,7 @@
 """はてなブックマーク — テクノロジー人気/新着エントリ RSS (RSS 1.0 / RDF, キー不要)"""
 import logging
 import xml.etree.ElementTree as ET
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import httpx
 
@@ -38,7 +38,7 @@ def _parse(xml_text: str, now: str) -> list[Post]:
 
 
 def collect() -> list[Post]:
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
     posts: list[Post] = []
     with httpx.Client(timeout=30.0, headers={"User-Agent": "oss-radar/1.0"}) as client:
         for url in FEEDS:
