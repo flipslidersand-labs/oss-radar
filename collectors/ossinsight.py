@@ -4,7 +4,7 @@ v1/trends/repos エンドポイント使用。
 旧 /v1/collections/{slug}/ranking/repos は廃止済み（404）。
 """
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import httpx
 
@@ -75,7 +75,7 @@ def _fetch_lang(client: httpx.Client, lang: str, now: str) -> list[Repo]:
 
 
 def collect() -> list[Repo]:
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
     repos: list[Repo] = []
 
     with httpx.Client(timeout=30.0) as client:

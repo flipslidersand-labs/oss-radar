@@ -1,6 +1,6 @@
 """github.com/trending スクレイパー — 全言語トレンドページ"""
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import httpx
 from bs4 import BeautifulSoup
@@ -31,7 +31,7 @@ def collect(lang: str = "", since: str = "daily") -> list[Repo]:
     url = _BASE
     if lang:
         url = f"{_BASE}/{lang}"
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
 
     with httpx.Client(timeout=30.0, follow_redirects=True) as client:
         r = client.get(url, params={"since": since}, headers={"Accept": "text/html"})
