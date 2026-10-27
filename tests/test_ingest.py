@@ -215,3 +215,35 @@ def test_ingest_uses_collection_name():
 
     upsert_call = mock_qdrant.upsert.call_args
     assert upsert_call.kwargs["collection_name"] == "my-collection"
+
+
+def test_ingest_passes_qdrant_api_key():
+    repos = [_repo("owner/repo-0")]
+
+    with patch("ingest.QdrantClient") as mock_qdrant_cls, \
+         patch("ingest._embed", return_value=_fake_vectors(1)):
+        mock_qdrant = MagicMock()
+        col = MagicMock()
+        col.name = "col"
+        mock_qdrant.get_collections.return_value.collections = [col]
+        mock_qdrant_cls.return_value = mock_qdrant
+
+        ingest(repos, "http://qdrant", "http://embed", "col", qdrant_api_key="qkey")
+
+    mock_qdrant_cls.assert_called_once_with(url="http://qdrant", api_key="qkey")
+
+
+def test_ingest_qdrant_api_key_empty_becomes_none():
+    repos = [_repo("owner/repo-0")]
+
+    with patch("ingest.QdrantClient") as mock_qdrant_cls, \
+         patch("ingest._embed", return_value=_fake_vectors(1)):
+        mock_qdrant = MagicMock()
+        col = MagicMock()
+        col.name = "col"
+        mock_qdrant.get_collections.return_value.collections = [col]
+        mock_qdrant_cls.return_value = mock_qdrant
+
+        ingest(repos, "http://qdrant", "http://embed", "col")
+
+    mock_qdrant_cls.assert_called_once_with(url="http://qdrant", api_key=None)

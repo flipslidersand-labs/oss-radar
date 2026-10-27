@@ -54,11 +54,12 @@ class SearchClient:
         embed_url: str,
         api_key: str = "",
         embed_collection: str = "sessions",
+        qdrant_api_key: str = "",
     ) -> None:
         self._embed_url = embed_url
         self._api_key = api_key
         self._embed_collection = embed_collection
-        self._qdrant = QdrantClient(url=qdrant_url)
+        self._qdrant = QdrantClient(url=qdrant_url, api_key=qdrant_api_key or None)
         self._http = httpx.Client(timeout=60.0)
 
     def _embed(self, text: str) -> list[float]:

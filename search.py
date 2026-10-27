@@ -19,6 +19,7 @@ from oss_radar.query import SearchClient
 load_dotenv()
 
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
+QDRANT_API_KEY = os.getenv("QDRANT_API_KEY", "")
 EMBED_URL = os.getenv("EMBED_URL", "http://localhost:9092/embed/batch")
 EMBED_API_KEY = os.getenv("EMBED_API_KEY", "")
 EMBED_COLLECTION = os.getenv("EMBED_COLLECTION", "sessions")
@@ -38,7 +39,7 @@ def search(query: str, lang: str | None, license_: str | None, stars_min: int,
     insecure = insecure_embed_url_warning(EMBED_URL, EMBED_API_KEY)
     if insecure:
         click.echo(f"[WARN] {insecure}", err=True)
-    client = SearchClient(QDRANT_URL, EMBED_URL, EMBED_API_KEY, EMBED_COLLECTION)
+    client = SearchClient(QDRANT_URL, EMBED_URL, EMBED_API_KEY, EMBED_COLLECTION, QDRANT_API_KEY)
     results = client.search(query, COLLECTION, lang=lang, license_=license_,
                             stars_min=stars_min, source=source, since=since, limit=limit)
 
