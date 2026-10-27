@@ -4,7 +4,7 @@ bestofjs.org は公開 REST API を持たないため GitHub Search API で代�
 stars:>500 の JS/TS リポジトリを週次更新順で取得する。
 """
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import httpx
 
@@ -74,11 +74,11 @@ def _fetch_lang(lang: str, headers: dict, since: str, per_lang: int, now: str) -
 
 
 def collect(token: str = "", days_back: int = 7, per_lang: int = 50) -> list[Repo]:
-    since = (datetime.now(timezone.utc) - timedelta(days=days_back)).strftime("%Y-%m-%d")
+    since = (datetime.now(UTC) - timedelta(days=days_back)).strftime("%Y-%m-%d")
     headers = {"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"}
     if token:
         headers["Authorization"] = f"Bearer {token}"
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
 
     repos: list[Repo] = []
     for lang in ("JavaScript", "TypeScript"):
