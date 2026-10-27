@@ -165,3 +165,13 @@ def test_search_client_has_persistent_http_client():
     client, _ = _make_client()
     assert hasattr(client, "_http")
     assert isinstance(client._http, httpx.Client)
+
+
+def test_search_client_passes_qdrant_api_key():
+    with patch("oss_radar.query.QdrantClient") as cls:
+        SearchClient("http://qdrant", "http://embed", "key", "sessions", "qkey")
+    cls.assert_called_once_with(url="http://qdrant", api_key="qkey")
+
+    with patch("oss_radar.query.QdrantClient") as cls:
+        SearchClient("http://qdrant", "http://embed", "key", "sessions")
+    cls.assert_called_once_with(url="http://qdrant", api_key=None)

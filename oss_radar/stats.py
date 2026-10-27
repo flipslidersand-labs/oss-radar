@@ -30,6 +30,7 @@ def record_snapshot(
     source: str,
     count: int,
     elapsed_sec: float,
+    qdrant_api_key: str = "",
 ) -> None:
     """収集統計を oss-radar-stats コレクションに upsert する。
 
@@ -38,9 +39,10 @@ def record_snapshot(
         source: 収集ソース名 (例: "github_search")
         count: 収集件数
         elapsed_sec: 収集にかかった秒数
+        qdrant_api_key: Qdrant の API キー (未設定なら認証なし)
     """
     today = date.today().isoformat()
-    client = QdrantClient(url=qdrant_url)
+    client = QdrantClient(url=qdrant_url, api_key=qdrant_api_key or None)
     _ensure_stats_collection(client)
 
     point_id = _make_point_id(today, source)

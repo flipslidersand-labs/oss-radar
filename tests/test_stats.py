@@ -126,3 +126,16 @@ def test_record_snapshot_point_id_matches_helper():
     points = mock_qdrant.upsert.call_args.kwargs["points"]
     expected_id = _make_point_id("2026-08-26", "bestofjs")
     assert points[0].id == expected_id
+
+
+def test_record_snapshot_passes_qdrant_api_key():
+    with patch("oss_radar.stats.QdrantClient") as mock_qdrant_cls:
+        mock_qdrant = MagicMock()
+        col = MagicMock()
+        col.name = STATS_COLLECTION
+        mock_qdrant.get_collections.return_value.collections = [col]
+        mock_qdrant_cls.return_value = mock_qdrant
+
+        record_snapshot("http://qdrant", "github_search", 1, 0.5, qdrant_api_key="qkey")
+
+    mock_qdrant_cls.assert_called_once_with(url="http://qdrant", api_key="qkey")
