@@ -1,7 +1,7 @@
 """GitHub Search API — 全言語トレンド (stars/updated ソート)"""
 import sys
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import httpx
 
@@ -37,13 +37,13 @@ def _get_page(client: httpx.Client, params: dict, headers: dict) -> dict:
 
 
 def collect(token: str, days_back: int = 7, pages: int = 3) -> list[Repo]:
-    since = (datetime.now(timezone.utc) - timedelta(days=days_back)).strftime("%Y-%m-%d")
+    since = (datetime.now(UTC) - timedelta(days=days_back)).strftime("%Y-%m-%d")
     headers = {
         "Authorization": f"Bearer {token}",
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
     }
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
     repos: list[Repo] = []
 
     with httpx.Client(timeout=30.0) as client:
