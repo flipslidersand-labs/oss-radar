@@ -1,4 +1,4 @@
-"""oss_radar.query — embed_query / SearchClient のユニットテスト"""
+"""oss_radar.query — SearchClient のユニットテスト"""
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -8,7 +8,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from oss_radar.query import SearchClient, embed_query
+from oss_radar.query import SearchClient
 
 FAKE_VEC = [0.1] * 768
 
@@ -20,59 +20,6 @@ def _mock_embed_response(vector: list[float] | None = None):
     return response
 
 
-def _patch_httpx(response):
-    mock_client = MagicMock()
-    mock_client.__enter__ = lambda s: mock_client
-    mock_client.__exit__ = MagicMock(return_value=False)
-    mock_client.post.return_value = response
-    return patch("oss_radar.query.httpx.Client", return_value=mock_client), mock_client
-
-
-# ── embed_query ───────────────────────────────────────────────────────────────
-
-def test_embed_query_returns_vector():
-    patcher, mock_client = _patch_httpx(_mock_embed_response())
-    with patcher:
-        result = embed_query("search text", "http://embed/batch", "key", "sessions")
-    assert result == FAKE_VEC
-
-
-def test_embed_query_payload():
-    patcher, mock_client = _patch_httpx(_mock_embed_response())
-    with patcher:
-        embed_query("hello", "http://embed/batch", "mykey", "sessions")
-    payload = mock_client.post.call_args.kwargs["json"]
-    assert payload["texts"] == ["hello"]
-    assert payload["mode"] == "search"
-    assert payload["collection"] == "sessions"
-
-
-def test_embed_query_api_key_header():
-    patcher, mock_client = _patch_httpx(_mock_embed_response())
-    with patcher:
-        embed_query("q", "http://embed/batch", "secret", "sessions")
-    headers = mock_client.post.call_args.kwargs["headers"]
-    assert headers["X-API-Key"] == "secret"
-
-
-def test_embed_query_no_header_when_empty_key():
-    patcher, mock_client = _patch_httpx(_mock_embed_response())
-    with patcher:
-        embed_query("q", "http://embed/batch", "", "sessions")
-    headers = mock_client.post.call_args.kwargs["headers"]
-    assert "X-API-Key" not in headers
-
-
-def test_embed_query_propagates_http_error():
-    response = MagicMock(spec=httpx.Response)
-    response.raise_for_status.side_effect = httpx.HTTPStatusError(
-        "401", request=MagicMock(), response=response
-    )
-    patcher, _ = _patch_httpx(response)
-    with patcher, pytest.raises(httpx.HTTPStatusError):
-        embed_query("q", "http://embed/batch")
-
-
 # ── SearchClient ──────────────────────────────────────────────────────────────
 
 def _make_client(qdrant_mock: MagicMock | None = None) -> tuple[SearchClient, MagicMock]:
@@ -81,6 +28,48 @@ def _make_client(qdrant_mock: MagicMock | None = None) -> tuple[SearchClient, Ma
     with patch("oss_radar.query.QdrantClient", return_value=qdrant_mock):
         client = SearchClient("http://qdrant", "http://embed", "key", "sessions")
     return client, qdrant_mock
+
+
+# ── SearchClient._embed ───────────────────────────────────────────────────────
+
+def _embed_client(api_key: str = "key", response=None):
+    client, _ = _make_client()
+    client._api_key = api_key
+    client._http = MagicMock()
+    client._http.post.return_value = response or _mock_embed_response()
+    return client
+
+
+def test_embed_returns_vector():
+    assert _embed_client()._embed("search text") == FAKE_VEC
+
+
+def test_embed_payload():
+    client = _embed_client()
+    client._embed("hello")
+    payload = client._http.post.call_args.kwargs["json"]
+    assert payload["texts"] == ["hello"]
+    assert payload["mode"] == "search"
+    assert payload["collection"] == "sessions"
+
+
+def test_embed_api_key_header():
+    client = _embed_client("secret")
+    client._embed("q")
+    assert client._http.post.call_args.kwargs["headers"]["X-API-Key"] == "secret"
+
+
+def test_embed_no_header_when_empty_key():
+    client = _embed_client("")
+    client._embed("q")
+    assert "X-API-Key" not in client._http.post.call_args.kwargs["headers"]
+
+
+def test_embed_propagates_http_error():
+    response = MagicMock(spec=httpx.Response)
+    response.raise_for_status.side_effect = httpx.HTTPStatusError("401", request=MagicMock(), response=response)
+    with pytest.raises(httpx.HTTPStatusError):
+        _embed_client(response=response)._embed("q")
 
 
 def test_search_calls_query_points():
