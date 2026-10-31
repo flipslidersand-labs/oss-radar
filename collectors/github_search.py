@@ -67,7 +67,7 @@ def collect(token: str, days_back: int = 7, pages: int = 3) -> list[Repo]:
                     description=item.get("description") or "",
                     stars=item.get("stargazers_count", 0),
                     lang=item.get("language"),
-                    topics=item.get("topics", []),
+                    topics=item.get("topics") or [],
                     license=(item.get("license") or {}).get("spdx_id"),
                     source="github_search",
                     fetched_at=now,
