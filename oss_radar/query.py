@@ -7,23 +7,6 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import DatetimeRange, FieldCondition, Filter, MatchValue, Range
 
 
-def embed_query(
-    text: str,
-    embed_url: str,
-    api_key: str = "",
-    embed_collection: str = "sessions",
-) -> list[float]:
-    headers = {"X-API-Key": api_key} if api_key else {}
-    with httpx.Client(timeout=60.0) as client:
-        r = client.post(
-            embed_url,
-            json={"texts": [text], "collection": embed_collection, "mode": "search"},
-            headers=headers,
-        )
-        r.raise_for_status()
-    return r.json()["vectors"][0]
-
-
 def build_filter(
     lang: str | None,
     license_: str | None,
