@@ -10,6 +10,8 @@ import json
 import os
 import sys
 import time
+from collections.abc import Callable
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
 import click
@@ -51,6 +53,20 @@ def dedup(repos) -> list:
     return result
 
 
+@dataclass
+class Source:
+    """収集ソース 1 つ。ソース追加は main() の `sources` に 1 件足すだけでよい。
+
+    variants: (ラベル, 収集関数)。ラベルが空なら単独実行、あれば `name/label` で個別に失敗を記録する
+              (例: gh_trending の daily / weekly)。
+    skip: (理由, stderr に出すか)。指定時は収集せず件数 0 とする。
+    """
+    name: str
+    title: str
+    variants: list[tuple[str, Callable[[], list]]]
+    skip: tuple[str, bool] | None = field(default=None)
+
+
 @click.command()
 @click.option("--skip-ossinsight", is_flag=True, default=False)
 @click.option("--skip-bestofjs", is_flag=True, default=False)
@@ -68,77 +84,51 @@ def main(skip_ossinsight: bool, skip_bestofjs: bool, days_back: int, dry_run: bo
     source_stats: dict[str, tuple[int, float]] = {}
     errors: list[dict] = []
 
-    # 1. GitHub Search API
-    if GITHUB_TOKEN:
-        click.echo("[1/4] GitHub Search API ...")
-        try:
-            t0 = time.monotonic()
-            repos = github_search.collect(GITHUB_TOKEN, days_back=days_back)
-            elapsed = time.monotonic() - t0
-            click.echo(f"  → {len(repos)} repos")
-            all_repos.extend(repos)
-            source_counts["github_search"] = len(repos)
-            source_stats["github_search"] = (len(repos), elapsed)
-        except Exception as e:
-            click.echo(f"  ✗ {e}", err=True)
-            errors.append({"source": "github_search", "error": str(e)})
-            source_counts["github_search"] = 0
-    else:
-        click.echo("[1/4] GitHub Search API … GITHUB_TOKEN 未設定、スキップ", err=True)
-        source_counts["github_search"] = 0
+    sources = [
+        Source(
+            "github_search", "GitHub Search API",
+            [("", lambda: github_search.collect(GITHUB_TOKEN, days_back=days_back))],
+            skip=None if GITHUB_TOKEN else ("GITHUB_TOKEN 未設定、スキップ", True),
+        ),
+        Source(
+            "gh_trending", "github.com/trending",
+            [(since, lambda since=since: gh_trending.collect(since=since)) for since in ("daily", "weekly")],
+        ),
+        Source(
+            "bestofjs", "JS/TS (bestofjs via GitHub Search)",
+            [("", lambda: bestofjs.collect(token=GITHUB_TOKEN, days_back=days_back))],
+            skip=("スキップ", False) if skip_bestofjs else None,
+        ),
+        Source(
+            "ossinsight", "ossinsight.io",
+            [("", ossinsight.collect)],
+            skip=("スキップ", False) if skip_ossinsight else None,
+        ),
+    ]
 
-    # 2. github.com/trending scrape
-    click.echo("[2/4] github.com/trending ...")
-    source_counts["gh_trending"] = 0
-    t0 = time.monotonic()
-    for since in ("daily", "weekly"):
-        try:
-            repos = gh_trending.collect(since=since)
-            click.echo(f"  {since}: {len(repos)} repos")
+    for i, src in enumerate(sources, 1):
+        prefix = f"[{i}/{len(sources)}]"
+        source_counts[src.name] = 0
+        if src.skip:
+            reason, to_err = src.skip
+            click.echo(f"{prefix} {src.name} … {reason}", err=to_err)
+            continue
+        click.echo(f"{prefix} {src.title} ...")
+        t0 = time.monotonic()
+        succeeded = False
+        for label, collect in src.variants:
+            try:
+                repos = collect()
+            except Exception as e:
+                click.echo(f"  ✗ {label + ': ' if label else ''}{e}", err=True)
+                errors.append({"source": f"{src.name}/{label}" if label else src.name, "error": str(e)})
+                continue
+            succeeded = True
+            click.echo(f"  {label}: {len(repos)} repos" if label else f"  → {len(repos)} repos")
             all_repos.extend(repos)
-            source_counts["gh_trending"] += len(repos)
-        except Exception as e:
-            click.echo(f"  ✗ {since}: {e}", err=True)
-            errors.append({"source": f"gh_trending/{since}", "error": str(e)})
-    source_stats["gh_trending"] = (source_counts["gh_trending"], time.monotonic() - t0)
-
-    # 3. bestofjs.org
-    if not skip_bestofjs:
-        click.echo("[3/4] JS/TS (bestofjs via GitHub Search) ...")
-        try:
-            t0 = time.monotonic()
-            repos = bestofjs.collect(token=GITHUB_TOKEN, days_back=days_back)
-            elapsed = time.monotonic() - t0
-            click.echo(f"  → {len(repos)} repos")
-            all_repos.extend(repos)
-            source_counts["bestofjs"] = len(repos)
-            source_stats["bestofjs"] = (len(repos), elapsed)
-        except Exception as e:
-            click.echo(f"  ✗ {e}", err=True)
-            errors.append({"source": "bestofjs", "error": str(e)})
-            source_counts["bestofjs"] = 0
-    else:
-        click.echo("[3/4] bestofjs … スキップ")
-        source_counts["bestofjs"] = 0
-
-    # 4. ossinsight.io
-    if not skip_ossinsight:
-        click.echo("[4/4] ossinsight.io ...")
-        try:
-            t0 = time.monotonic()
-            repos = ossinsight.collect()
-            elapsed = time.monotonic() - t0
-            click.echo(f"  → {len(repos)} repos")
-            all_repos.extend(repos)
-            source_counts["ossinsight"] = len(repos)
-            source_stats["ossinsight"] = (len(repos), elapsed)
-        except Exception as e:
-            click.echo(f"  ✗ {e}", err=True)
-            errors.append({"source": "ossinsight", "error": str(e)})
-            source_counts["ossinsight"] = 0
-    else:
-        click.echo("[4/4] ossinsight … スキップ")
-        source_counts["ossinsight"] = 0
+            source_counts[src.name] += len(repos)
+        if succeeded:
+            source_stats[src.name] = (source_counts[src.name], time.monotonic() - t0)
 
     deduped = dedup(all_repos)
     click.echo(f"\n合計: {len(all_repos)} → dedup後: {len(deduped)}")
