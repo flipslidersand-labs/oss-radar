@@ -6,6 +6,8 @@ import httpx
 from qdrant_client import QdrantClient
 from qdrant_client.models import DatetimeRange, FieldCondition, Filter, MatchValue, Range
 
+from oss_radar.embed import post_embed
+
 
 def build_filter(
     lang: str | None,
@@ -46,14 +48,7 @@ class SearchClient:
         self._http = httpx.Client(timeout=60.0)
 
     def _embed(self, text: str) -> list[float]:
-        headers = {"X-API-Key": self._api_key} if self._api_key else {}
-        r = self._http.post(
-            self._embed_url,
-            json={"texts": [text], "collection": self._embed_collection, "mode": "search"},
-            headers=headers,
-        )
-        r.raise_for_status()
-        return r.json()["vectors"][0]
+        return post_embed(self._http, self._embed_url, [text], self._embed_collection, "search", self._api_key)[0]
 
     def search(
         self,
