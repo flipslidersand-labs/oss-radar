@@ -75,6 +75,19 @@ set -a && source .env && set +a
 .venv/bin/python main.py --skip-ossinsight
 ```
 
+### Community posts (HN / Zenn / Hatena Bookmark)
+
+Collected into a separate collection (`community-posts`, override with `COMMUNITY_COLLECTION`) so repo search is not mixed with articles.
+
+```bash
+set -a && source .env && set +a
+.venv/bin/python community.py --dry-run   # fetch and print only
+.venv/bin/python community.py             # upsert into community-posts
+
+# search the community collection
+COLLECTION=community-posts .venv/bin/python search.py "LLM"
+```
+
 ### Search
 
 ```bash
@@ -121,6 +134,7 @@ Example `.claude/settings.json` registration:
 | cron | Schedule | Content |
 |---|---|---|
 | Collect | Daily 07:00 JST (22:00 UTC) | Run `main.py` → log: `/var/log/oss-radar.log` |
+| Community | Daily 07:30 JST (22:30 UTC) | Run `community.py` → log: `/var/log/oss-radar-community.log` (per-source counts) |
 | Deploy | Every hour at :00 | `scripts/deploy.sh` (git pull + pip sync) → log: `/var/log/oss-radar-deploy.log` |
 
 ### Operations
@@ -241,6 +255,19 @@ set -a && source .env && set +a
 .venv/bin/python main.py --skip-ossinsight
 ```
 
+### コミュニティ記事 (HN / Zenn / はてなブックマーク)
+
+repo 検索に記事が混ざらないよう、別コレクション `community-posts` に入れる（`COMMUNITY_COLLECTION` で変更可）。
+
+```bash
+set -a && source .env && set +a
+.venv/bin/python community.py --dry-run   # 取得して表示するだけ
+.venv/bin/python community.py             # community-posts に upsert
+
+# コミュニティコレクションを検索
+COLLECTION=community-posts .venv/bin/python search.py "LLM"
+```
+
 ### 検索
 
 ```bash
@@ -287,6 +314,7 @@ set -a && source .env && set +a
 | cron | スケジュール | 内容 |
 |---|---|---|
 | 収集 | 毎日 07:00 JST (22:00 UTC) | `main.py` 実行 → ログ: `/var/log/oss-radar.log` |
+| コミュニティ | 毎日 07:30 JST (22:30 UTC) | `community.py` 実行 → ログ: `/var/log/oss-radar-community.log`(ソース別件数) |
 | デプロイ | 毎時 0 分 | `scripts/deploy.sh` (git pull + pip sync) → ログ: `/var/log/oss-radar-deploy.log` |
 
 ### 運用手順
