@@ -8,7 +8,7 @@ from qdrant_client.http.exceptions import UnexpectedResponse
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from ingest import BATCH_SIZE, _embed, _ensure_collection, ingest
+from ingest import BATCH_SIZE, VECTOR_SIZE, _embed, _ensure_collection, ingest
 from models import Repo
 
 
@@ -174,6 +174,24 @@ def test_ingest_embed_mismatch_raises():
 
         with pytest.raises(ValueError, match="embed mismatch"):
             ingest(repos, "http://qdrant", "http://embed", "col")
+
+
+def test_ingest_wrong_vector_dim_raises_before_upsert():
+    repos = [_repo(f"owner/r{i}") for i in range(2)]
+    wrong = [[0.1] * (VECTOR_SIZE + 1) for _ in range(2)]
+
+    with patch("ingest.QdrantClient") as mock_qdrant_cls, \
+         patch("ingest._embed", return_value=wrong):
+        mock_qdrant = MagicMock()
+        col = MagicMock()
+        col.name = "col"
+        mock_qdrant.get_collections.return_value.collections = [col]
+        mock_qdrant_cls.return_value = mock_qdrant
+
+        with pytest.raises(ValueError, match="vector dim"):
+            ingest(repos, "http://qdrant", "http://embed", "col")
+
+    mock_qdrant.upsert.assert_not_called()
 
 
 def test_ingest_multi_batch():
