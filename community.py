@@ -58,7 +58,9 @@ def main(dry_run: bool):
 
     from ingest import ingest
 
-    count = ingest(deduped, QDRANT_URL, EMBED_URL, COMMUNITY_COLLECTION, EMBED_API_KEY, EMBED_COLLECTION, QDRANT_API_KEY)
+    count = ingest(
+        deduped, QDRANT_URL, EMBED_URL, COMMUNITY_COLLECTION, EMBED_API_KEY, EMBED_COLLECTION, QDRANT_API_KEY
+    )
     click.echo(f"完了: {count} points upserted → {COMMUNITY_COLLECTION}")
 
 
