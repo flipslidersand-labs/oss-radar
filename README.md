@@ -133,6 +133,7 @@ Example `.claude/settings.json` registration:
 | cron | Schedule | Content |
 |---|---|---|
 | Collect | Daily 07:00 JST (22:00 UTC) | Run `main.py` → log: `/var/log/oss-radar.log` |
+| Community | Daily 07:30 JST (22:30 UTC) | Run `community.py` → log: `/var/log/oss-radar-community.log` (per-source counts) |
 | Deploy | Every hour at :00 | `scripts/deploy.sh` (git pull + pip sync) → log: `/var/log/oss-radar-deploy.log` |
 
 ### Operations
@@ -311,6 +312,7 @@ set -a && source .env && set +a
 | cron | スケジュール | 内容 |
 |---|---|---|
 | 収集 | 毎日 07:00 JST (22:00 UTC) | `main.py` 実行 → ログ: `/var/log/oss-radar.log` |
+| コミュニティ | 毎日 07:30 JST (22:30 UTC) | `community.py` 実行 → ログ: `/var/log/oss-radar-community.log`(ソース別件数) |
 | デプロイ | 毎時 0 分 | `scripts/deploy.sh` (git pull + pip sync) → ログ: `/var/log/oss-radar-deploy.log` |
 
 ### 運用手順
