@@ -1,6 +1,7 @@
 """Embed + Qdrant upsert"""
 import httpx
 from qdrant_client import QdrantClient
+from qdrant_client.http.exceptions import UnexpectedResponse
 from qdrant_client.models import (
     Distance,
     PayloadSchemaType,
@@ -39,10 +40,15 @@ _PAYLOAD_INDEXES: list[tuple[str, PayloadSchemaType]] = [
 def _ensure_collection(client: QdrantClient, collection: str) -> None:
     existing = {c.name for c in client.get_collections().collections}
     if collection not in existing:
-        client.create_collection(
-            collection_name=collection,
-            vectors_config=VectorParams(size=VECTOR_SIZE, distance=Distance.COSINE),
-        )
+        try:
+            client.create_collection(
+                collection_name=collection,
+                vectors_config=VectorParams(size=VECTOR_SIZE, distance=Distance.COSINE),
+            )
+        except UnexpectedResponse as e:
+            # 並行プロセスが先に作成した場合(409)は成功扱い
+            if e.status_code != 409:
+                raise
     for field, schema_type in _PAYLOAD_INDEXES:
         client.create_payload_index(
             collection_name=collection,

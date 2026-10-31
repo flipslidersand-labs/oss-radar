@@ -4,6 +4,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
+from qdrant_client.http.exceptions import UnexpectedResponse
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -100,6 +101,29 @@ def test_ensure_collection_creates_when_missing():
     qdrant.create_collection.assert_called_once()
     kwargs = qdrant.create_collection.call_args.kwargs
     assert kwargs["collection_name"] == "github-trending"
+
+
+def _conflict(status: int = 409) -> UnexpectedResponse:
+    return UnexpectedResponse(status, "x", b"already exists", {})
+
+
+def test_ensure_collection_ignores_409_from_concurrent_create():
+    qdrant = MagicMock()
+    qdrant.get_collections.return_value.collections = []
+    qdrant.create_collection.side_effect = _conflict(409)
+
+    _ensure_collection(qdrant, "github-trending")  # 例外にならない
+
+    qdrant.create_payload_index.assert_called()
+
+
+def test_ensure_collection_reraises_non_409():
+    qdrant = MagicMock()
+    qdrant.get_collections.return_value.collections = []
+    qdrant.create_collection.side_effect = _conflict(500)
+
+    with pytest.raises(UnexpectedResponse):
+        _ensure_collection(qdrant, "github-trending")
 
 
 def test_ensure_collection_skips_when_exists():

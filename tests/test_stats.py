@@ -3,6 +3,9 @@ import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import pytest
+from qdrant_client.http.exceptions import UnexpectedResponse
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from oss_radar.stats import (
@@ -64,6 +67,23 @@ def test_ensure_stats_collection_skips_when_exists():
     _ensure_stats_collection(client)
 
     client.create_collection.assert_not_called()
+
+
+def test_ensure_stats_collection_ignores_409_from_concurrent_create():
+    client = MagicMock()
+    client.get_collections.return_value.collections = []
+    client.create_collection.side_effect = UnexpectedResponse(409, "x", b"already exists", {})
+
+    _ensure_stats_collection(client)  # 例外にならない
+
+
+def test_ensure_stats_collection_reraises_non_409():
+    client = MagicMock()
+    client.get_collections.return_value.collections = []
+    client.create_collection.side_effect = UnexpectedResponse(500, "x", b"boom", {})
+
+    with pytest.raises(UnexpectedResponse):
+        _ensure_stats_collection(client)
 
 
 # ── record_snapshot ───────────────────────────────────────────────────────────
