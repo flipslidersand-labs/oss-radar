@@ -23,14 +23,11 @@ def _parse_stars(text: str) -> int:
         return 0
 
 
-def collect(lang: str = "", since: str = "daily") -> list[Repo]:
+def collect(since: str = "daily") -> list[Repo]:
     """
-    lang: "" = 全言語, "python", "go", "rust" など
     since: "daily" | "weekly" | "monthly"
     """
     url = _BASE
-    if lang:
-        url = f"{_BASE}/{lang}"
     now = datetime.now(UTC).isoformat()
 
     with httpx.Client(timeout=30.0, follow_redirects=True) as client:
@@ -70,7 +67,7 @@ def collect(lang: str = "", since: str = "daily") -> list[Repo]:
 
     if not repos:
         print(
-            f"[gh_trending] WARNING: 0 repos scraped (since={since}, lang={lang!r})"
+            f"[gh_trending] WARNING: 0 repos scraped (since={since})"
             " — HTML 構造変更の可能性",
             file=sys.stderr,
         )
