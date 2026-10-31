@@ -33,13 +33,21 @@ notify() {
   local payload
   payload="$(mktemp)"
   jq -n --arg content "${message}" '{content: $content}' > "${payload}"
-  printf 'url = "%s"\n' "${DISCORD_WEBHOOK_URL}" |
-    curl -s -o /dev/null -w "%{http_code}" \
+  local code
+  code=$(printf 'url = "%s"\n' "${DISCORD_WEBHOOK_URL}" |
+    curl -s -o /dev/null -w "%{http_code}" --max-time 10 \
       -H "Content-Type: application/json" \
       --data-binary "@${payload}" \
-      -K - || true
+      -K - || true)
   rm -f "${payload}"
+  if [[ ! "${code}" =~ ^2[0-9][0-9]$ ]]; then
+    echo "[ERROR] Discord 通知に失敗しました (HTTP ${code:-000})" >&2
+    FAILED=1
+  fi
 }
+
+# 失敗を 1 件でも検知したら最後に exit 1 (cron / 監視が拾えるようにする)
+FAILED=0
 
 # --------------------------------------------------------------------------
 # 1. embed サービス疎通チェック
@@ -53,6 +61,7 @@ if [[ "${EMBED_STATUS}" != "200" ]]; then
   MSG="⚠️ oss-radar: embed サービスが応答しません (${EMBED_API_URL}/health → HTTP ${EMBED_STATUS})"
   echo "[ERROR] ${MSG}" >&2
   notify "${MSG}"
+  FAILED=1
 else
   echo "[INFO] embed サービス OK (HTTP ${EMBED_STATUS})"
 fi
@@ -77,7 +86,14 @@ if [[ -z "${COLLECTION_INFO}" ]]; then
   exit 1
 fi
 
-CURRENT_COUNT=$(echo "${COLLECTION_INFO}" | jq -r '.result.points_count // 0' 2>/dev/null || echo "0")
+CURRENT_COUNT=$(echo "${COLLECTION_INFO}" | jq -r '.result.points_count | numbers' 2>/dev/null || true)
+if [[ ! "${CURRENT_COUNT}" =~ ^[0-9]+$ ]]; then
+  # エラー JSON など。0 とみなしてキャッシュへ保存すると停滞判定が恒久的に無効化されるため保存しない
+  MSG="⚠️ oss-radar: Qdrant から points_count を取得できません (collection: ${COLLECTION})"
+  echo "[ERROR] ${MSG}" >&2
+  notify "${MSG}"
+  exit 1
+fi
 echo "[INFO] 現在の points_count: ${CURRENT_COUNT}"
 
 # 前回カウントをキャッシュファイルで保持
@@ -103,4 +119,8 @@ else
   echo "[INFO] ingest 正常 (${PREVIOUS_COUNT} → ${CURRENT_COUNT})"
 fi
 
+if [[ "${FAILED}" -ne 0 ]]; then
+  echo "[ERROR] ヘルスチェックで異常を検知しました" >&2
+  exit 1
+fi
 echo "[INFO] ヘルスチェック完了"
