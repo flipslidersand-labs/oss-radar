@@ -3,6 +3,7 @@
 bestofjs.org は公開 REST API を持たないため GitHub Search API で代替。
 stars:>500 の JS/TS リポジトリを週次更新順で取得する。
 """
+
 import time
 from datetime import UTC, datetime, timedelta
 
@@ -49,16 +50,18 @@ def _fetch_lang(lang: str, headers: dict, since: str, per_lang: int, now: str) -
     for item in r.json().get("items", []):
         if not item.get("full_name"):
             continue
-        repos.append(Repo(
-            full_name=item["full_name"],
-            description=item.get("description") or "",
-            stars=item.get("stargazers_count", 0),
-            lang=item.get("language"),
-            topics=item.get("topics") or [],
-            license=(item.get("license") or {}).get("spdx_id"),
-            source="bestofjs",
-            fetched_at=now,
-        ))
+        repos.append(
+            Repo(
+                full_name=item["full_name"],
+                description=item.get("description") or "",
+                stars=item.get("stargazers_count", 0),
+                lang=item.get("language"),
+                topics=item.get("topics") or [],
+                license=(item.get("license") or {}).get("spdx_id"),
+                source="bestofjs",
+                fetched_at=now,
+            )
+        )
     return repos
 
 

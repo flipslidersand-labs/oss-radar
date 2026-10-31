@@ -1,4 +1,5 @@
 """collectors.gh_trending._parse_stars() のユニットテスト"""
+
 import sys
 from pathlib import Path
 

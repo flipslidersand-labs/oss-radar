@@ -1,4 +1,5 @@
 """mcp_server.on_call_tool の引数検証(#93): 非数値の stars_min/limit は例外でなく isError を返す"""
+
 import asyncio
 import sys
 from pathlib import Path

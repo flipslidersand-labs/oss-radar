@@ -1,4 +1,5 @@
 """search.search() の出力: 0件メッセージ・テーブル・description 切り詰め・lang 未指定"""
+
 from types import SimpleNamespace
 from unittest.mock import patch
 

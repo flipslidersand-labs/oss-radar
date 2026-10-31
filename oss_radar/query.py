@@ -2,6 +2,7 @@
 
 search.py と mcp_server.py の両方から使用する。
 """
+
 import httpx
 from qdrant_client import QdrantClient
 from qdrant_client.models import DatetimeRange, FieldCondition, Filter, MatchValue, Range

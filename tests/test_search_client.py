@@ -1,4 +1,5 @@
 """oss_radar.query — SearchClient のユニットテスト"""
+
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -22,6 +23,7 @@ def _mock_embed_response(vector: list[float] | None = None):
 
 # ── SearchClient ──────────────────────────────────────────────────────────────
 
+
 def _make_client(qdrant_mock: MagicMock | None = None) -> tuple[SearchClient, MagicMock]:
     if qdrant_mock is None:
         qdrant_mock = MagicMock()
@@ -31,6 +33,7 @@ def _make_client(qdrant_mock: MagicMock | None = None) -> tuple[SearchClient, Ma
 
 
 # ── SearchClient._embed ───────────────────────────────────────────────────────
+
 
 def _embed_client(api_key: str = "key", response=None):
     client, _ = _make_client()

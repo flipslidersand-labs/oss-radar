@@ -1,4 +1,5 @@
 """GitHub Search API — 全言語トレンド (stars/updated ソート)"""
+
 import sys
 import time
 from datetime import UTC, datetime, timedelta
@@ -28,7 +29,7 @@ def _get_page(client: httpx.Client, params: dict, headers: dict) -> dict:
                 )
                 return {}
             if 500 <= code < 600 and attempt < _MAX_RETRIES:
-                wait = 2 ** attempt
+                wait = 2**attempt
                 print(f"  [github_search] HTTP {code} — retry {attempt + 1}/{_MAX_RETRIES} in {wait}s", file=sys.stderr)
                 time.sleep(wait)
                 continue
@@ -62,15 +63,17 @@ def collect(token: str, days_back: int = 7, pages: int = 3) -> list[Repo]:
             for item in data.get("items", []):
                 if not item.get("full_name"):
                     continue
-                repos.append(Repo(
-                    full_name=item["full_name"],
-                    description=item.get("description") or "",
-                    stars=item.get("stargazers_count", 0),
-                    lang=item.get("language"),
-                    topics=item.get("topics") or [],
-                    license=(item.get("license") or {}).get("spdx_id"),
-                    source="github_search",
-                    fetched_at=now,
-                ))
+                repos.append(
+                    Repo(
+                        full_name=item["full_name"],
+                        description=item.get("description") or "",
+                        stars=item.get("stargazers_count", 0),
+                        lang=item.get("language"),
+                        topics=item.get("topics") or [],
+                        license=(item.get("license") or {}).get("spdx_id"),
+                        source="github_search",
+                        fetched_at=now,
+                    )
+                )
 
     return repos
