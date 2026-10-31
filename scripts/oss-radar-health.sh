@@ -14,6 +14,7 @@ fi
 QDRANT_URL="${QDRANT_URL:-http://localhost:6333}"
 EMBED_API_URL="${EMBED_API_URL:-http://localhost:9092}"
 COLLECTION="${COLLECTION:-github-trending}"
+QDRANT_API_KEY="${QDRANT_API_KEY:-}"
 DISCORD_WEBHOOK_URL="${DISCORD_WEBHOOK_URL:-}"
 
 # --------------------------------------------------------------------------
@@ -27,10 +28,17 @@ notify() {
     echo "${message}" >&2
     return
   fi
-  curl -s -o /dev/null -w "%{http_code}" \
-    -H "Content-Type: application/json" \
-    -d "{\"content\": \"${message}\"}" \
-    "${DISCORD_WEBHOOK_URL}" || true
+  # Webhook URL は機密(トークン含む)のため curl の引数に載せない(ps / /proc/<pid>/cmdline 露出対策)。
+  # URL は -K - で標準入力の config として渡し、payload は jq で JSON エスケープして一時ファイル経由で渡す。
+  local payload
+  payload="$(mktemp)"
+  jq -n --arg content "${message}" '{content: $content}' > "${payload}"
+  printf 'url = "%s"\n' "${DISCORD_WEBHOOK_URL}" |
+    curl -s -o /dev/null -w "%{http_code}" \
+      -H "Content-Type: application/json" \
+      --data-binary "@${payload}" \
+      -K - || true
+  rm -f "${payload}"
 }
 
 # --------------------------------------------------------------------------
@@ -54,8 +62,13 @@ fi
 # --------------------------------------------------------------------------
 
 echo "[INFO] Qdrant 件数チェック: ${QDRANT_URL}/collections/${COLLECTION}"
-COLLECTION_INFO=$(curl -s --max-time 10 \
-  "${QDRANT_URL}/collections/${COLLECTION}" 2>/dev/null || echo "")
+# QDRANT_API_KEY は ps に露出させないよう -K - (stdin config) で渡す
+# curl config の二重引用符内では \ と " が特殊なので先にエスケープする
+KEY_ESC=${QDRANT_API_KEY//\\/\\\\}
+KEY_ESC=${KEY_ESC//\"/\\\"}
+COLLECTION_INFO=$(printf 'header = "api-key: %s"\n' "${KEY_ESC}" |
+  curl -s --max-time 10 -K - \
+    "${QDRANT_URL}/collections/${COLLECTION}" 2>/dev/null || echo "")
 
 if [[ -z "${COLLECTION_INFO}" ]]; then
   MSG="⚠️ oss-radar: Qdrant (${QDRANT_URL}) に接続できません"

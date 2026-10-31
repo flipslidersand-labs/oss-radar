@@ -15,10 +15,13 @@ from datetime import UTC, datetime
 import click
 from dotenv import load_dotenv
 
+from oss_radar.env_check import insecure_embed_url_warning
+
 load_dotenv()
 
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
+QDRANT_API_KEY = os.getenv("QDRANT_API_KEY", "")
 EMBED_URL = os.getenv("EMBED_URL", "http://localhost:9092/embed/batch")
 EMBED_API_KEY = os.getenv("EMBED_API_KEY", "")
 EMBED_COLLECTION = os.getenv("EMBED_COLLECTION", "sessions")  # embedding-svc モデルルーティング用
@@ -31,6 +34,9 @@ def _check_env(dry_run: bool) -> None:
         warnings.append("EMBED_API_KEY が未設定です。embedding-svc の認証に失敗します (.env を確認してください)")
     if not dry_run and not EMBED_URL and not os.getenv("EMBED_URL"):
         warnings.append(f"EMBED_URL がデフォルト値 ({EMBED_URL}) のままです。外部ネットワークからは到達できません")
+    insecure = insecure_embed_url_warning(EMBED_URL, EMBED_API_KEY)
+    if not dry_run and insecure:
+        warnings.append(insecure)
     for w in warnings:
         click.echo(f"[WARN] {w}", err=True)
 
@@ -152,7 +158,7 @@ def main(skip_ossinsight: bool, skip_bestofjs: bool, days_back: int, dry_run: bo
         return
 
     click.echo(f"\nQdrant ({COLLECTION}) へ ingest ...")
-    count = ingest(deduped, QDRANT_URL, EMBED_URL, COLLECTION, EMBED_API_KEY, EMBED_COLLECTION)
+    count = ingest(deduped, QDRANT_URL, EMBED_URL, COLLECTION, EMBED_API_KEY, EMBED_COLLECTION, QDRANT_API_KEY)
     click.echo(f"完了: {count} points upserted")
 
     _emit_summary(
@@ -168,7 +174,7 @@ def main(skip_ossinsight: bool, skip_bestofjs: bool, days_back: int, dry_run: bo
     click.echo("\n[stats] oss-radar-stats へ snapshot 記録 ...")
     for source, (n, elapsed) in source_stats.items():
         try:
-            record_snapshot(QDRANT_URL, source, n, round(elapsed, 3))
+            record_snapshot(QDRANT_URL, source, n, round(elapsed, 3), QDRANT_API_KEY)
             click.echo(f"  {source}: {n} count, {elapsed:.1f}s")
         except Exception as e:
             click.echo(f"  ✗ stats upsert ({source}): {e}", err=True)

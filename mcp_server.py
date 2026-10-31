@@ -30,11 +30,13 @@ from mcp import types
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
 
+from oss_radar.env_check import insecure_embed_url_warning
 from oss_radar.query import SearchClient
 
 load_dotenv()
 
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
+QDRANT_API_KEY = os.getenv("QDRANT_API_KEY", "")
 EMBED_URL = os.getenv("EMBED_URL", "http://localhost:9092/embed/batch")
 EMBED_API_KEY = os.getenv("EMBED_API_KEY", "")
 EMBED_COLLECTION = os.getenv("EMBED_COLLECTION", "sessions")
@@ -46,7 +48,7 @@ _search_client: SearchClient | None = None
 def _get_client() -> SearchClient:
     global _search_client
     if _search_client is None:
-        _search_client = SearchClient(QDRANT_URL, EMBED_URL, EMBED_API_KEY, EMBED_COLLECTION)
+        _search_client = SearchClient(QDRANT_URL, EMBED_URL, EMBED_API_KEY, EMBED_COLLECTION, QDRANT_API_KEY)
     return _search_client
 
 
@@ -114,10 +116,16 @@ async def on_call_tool(ctx, params) -> types.CallToolResult:
     query: str = args.get("query", "")
     lang: str | None = args.get("lang")
     license_: str | None = args.get("license")
-    stars_min: int = int(args.get("stars_min", 0))
     source: str | None = args.get("source")
     since: str | None = args.get("since")
-    limit: int = min(int(args.get("limit", 10)), 50)
+    try:
+        stars_min: int = int(args.get("stars_min", 0))
+        limit: int = min(int(args.get("limit", 10)), 50)
+    except (ValueError, TypeError):
+        return types.CallToolResult(
+            content=[types.TextContent(type="text", text="stars_min と limit は整数で指定してください")],
+            isError=True,
+        )
 
     if not query:
         return types.CallToolResult(
@@ -169,6 +177,9 @@ def _check_env() -> None:
         warnings.append("EMBED_API_KEY が未設定です。embedding-svc の認証に失敗します")
     if not EMBED_URL and not os.getenv("EMBED_URL"):
         warnings.append(f"EMBED_URL がデフォルト値 ({EMBED_URL}) のままです")
+    insecure = insecure_embed_url_warning(EMBED_URL, EMBED_API_KEY)
+    if insecure:
+        warnings.append(insecure)
     for w in warnings:
         print(f"[oss-radar MCP WARN] {w}", file=sys.stderr)
 
