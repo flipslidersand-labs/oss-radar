@@ -10,6 +10,7 @@ from qdrant_client.models import (
 
 from models import Repo
 from oss_radar.collections import ensure_collection
+from oss_radar.embed import post_embed
 
 VECTOR_SIZE = 768  # MINIPC e5 model output dim
 BATCH_SIZE = 64
@@ -18,15 +19,8 @@ BATCH_SIZE = 64
 def _embed(
     texts: list[str], embed_url: str, api_key: str = "", embed_collection: str = "sessions"
 ) -> list[list[float]]:
-    headers = {"X-API-Key": api_key} if api_key else {}
     with httpx.Client(timeout=180.0) as client:
-        r = client.post(
-            embed_url,
-            json={"texts": texts, "collection": embed_collection, "mode": "index"},
-            headers=headers,
-        )
-        r.raise_for_status()
-    return r.json()["vectors"]
+        return post_embed(client, embed_url, texts, embed_collection, "index", api_key)
 
 
 _PAYLOAD_INDEXES: list[tuple[str, PayloadSchemaType]] = [
