@@ -149,3 +149,16 @@ def test_collect_partial_pages():
     with patch("github_search._get_page", side_effect=responses):
         repos = collect("token", days_back=7, pages=2)
     assert len(repos) == 1
+
+
+def test_collect_skips_items_missing_full_name_and_defaults_stars():
+    page_data = {
+        "items": [
+            {"stargazers_count": 10},  # full_name 欠落 → スキップ
+            {"full_name": "org/ok"},  # stargazers_count 欠落 → 0
+            {"full_name": "org/full", "stargazers_count": 99},
+        ]
+    }
+    with patch("github_search._get_page", return_value=page_data):
+        repos = collect("tok", pages=1)
+    assert [(r.full_name, r.stars) for r in repos] == [("org/ok", 0), ("org/full", 99)]

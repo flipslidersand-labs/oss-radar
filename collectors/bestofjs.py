@@ -60,10 +60,12 @@ def _fetch_lang(lang: str, headers: dict, since: str, per_lang: int, now: str) -
 
     repos = []
     for item in r.json().get("items", []):
+        if not item.get("full_name"):
+            continue
         repos.append(Repo(
             full_name=item["full_name"],
             description=item.get("description") or "",
-            stars=item["stargazers_count"],
+            stars=item.get("stargazers_count", 0),
             lang=item.get("language"),
             topics=item.get("topics", []),
             license=(item.get("license") or {}).get("spdx_id"),
