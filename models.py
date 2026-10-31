@@ -3,6 +3,14 @@ import uuid
 from dataclasses import dataclass
 
 
+def _stable_id(key: str) -> str:
+    """key から決定的な UUID 形式の point ID を作る。
+
+    既存 Qdrant コレクションの ID と一致させるため md5 方式を維持する(uuid5 化は ID が全て変わるため見送り: #95)。
+    """
+    return str(uuid.UUID(bytes=hashlib.md5(key.encode()).digest()))
+
+
 @dataclass
 class Repo:
     full_name: str
@@ -15,7 +23,7 @@ class Repo:
     fetched_at: str  # ISO8601
 
     def point_id(self) -> str:
-        return str(uuid.UUID(bytes=hashlib.md5(self.full_name.encode()).digest()))
+        return _stable_id(self.full_name)
 
     def embed_text(self) -> str:
         parts = [self.full_name]
@@ -51,7 +59,7 @@ class Post:
     discussion_url: str | None = None
 
     def point_id(self) -> str:
-        return str(uuid.UUID(bytes=hashlib.md5(self.url.encode()).digest()))
+        return _stable_id(self.url)
 
     def embed_text(self) -> str:
         return f"{self.title} | {self.source}"
