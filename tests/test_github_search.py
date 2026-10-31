@@ -162,3 +162,10 @@ def test_collect_skips_items_missing_full_name_and_defaults_stars():
     with patch("github_search._get_page", return_value=page_data):
         repos = collect("tok", pages=1)
     assert [(r.full_name, r.stars) for r in repos] == [("org/ok", 0), ("org/full", 99)]
+
+
+def test_collect_null_topics_become_empty_list():
+    page_data = {"items": [{"full_name": "o/r", "topics": None}]}
+    with patch("github_search._get_page", return_value=page_data):
+        (repo,) = collect("tok", pages=1)
+    assert repo.topics == []
