@@ -74,6 +74,19 @@ set -a && source .env && set +a
 .venv/bin/python main.py --skip-ossinsight
 ```
 
+### Community posts (HN / Zenn / Hatena Bookmark)
+
+Collected into a separate collection (`community-posts`, override with `COMMUNITY_COLLECTION`) so repo search is not mixed with articles.
+
+```bash
+set -a && source .env && set +a
+.venv/bin/python community.py --dry-run   # fetch and print only
+.venv/bin/python community.py             # upsert into community-posts
+
+# search the community collection
+COLLECTION=community-posts .venv/bin/python search.py "LLM"
+```
+
 ### Search
 
 ```bash
@@ -237,6 +250,19 @@ set -a && source .env && set +a
 
 # ossinsight スキップ
 .venv/bin/python main.py --skip-ossinsight
+```
+
+### コミュニティ記事 (HN / Zenn / はてなブックマーク)
+
+repo 検索に記事が混ざらないよう、別コレクション `community-posts` に入れる（`COMMUNITY_COLLECTION` で変更可）。
+
+```bash
+set -a && source .env && set +a
+.venv/bin/python community.py --dry-run   # 取得して表示するだけ
+.venv/bin/python community.py             # community-posts に upsert
+
+# コミュニティコレクションを検索
+COLLECTION=community-posts .venv/bin/python search.py "LLM"
 ```
 
 ### 検索
