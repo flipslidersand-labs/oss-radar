@@ -14,6 +14,7 @@ GitHub trending collector & semantic search — collects OSS trends from multipl
 - **Collect** (4 sources): GitHub Search API / github.com/trending scrape / JS-TS focused (bestofjs) / ossinsight.io
 - **Ingest**: MINIPC e5 embedding → upsert into Qdrant `github-trending` collection (deduplication)
 - **Search**: Natural language query + lang/license/stars-min filters for semantic search
+- **Stats**: after each run, per-source counts and timings are recorded as a snapshot in the `oss-radar-stats` collection (used by the health check)
 
 ### Directory Structure
 
@@ -25,14 +26,22 @@ oss-radar/
 │   ├── bestofjs.py        # JS/TS focused (GitHub Search alternative)
 │   └── ossinsight.py      # ossinsight.io trends
 ├── oss_radar/
-│   └── query.py           # SearchClient — embed + Qdrant shared helper
+│   ├── query.py           # SearchClient — embed + Qdrant shared helper
+│   ├── stats.py           # Snapshot of per-source counts → oss-radar-stats
+│   └── env_check.py       # Startup warnings for insecure settings
 ├── scripts/
-│   └── deploy.sh          # Auto-deploy to host (git pull + pip sync)
+│   ├── deploy.sh          # Auto-deploy to host (git pull + pip sync)
+│   ├── oss-radar-health.sh # Weekly health check (Qdrant count / embed / Discord)
+│   └── logrotate-oss-radar.conf
+├── tests/                 # pytest unit tests (`make test`)
+├── errors/                # Notes on past errors and pitfalls
 ├── ingest.py              # embed + Qdrant upsert
 ├── search.py              # Semantic search CLI
 ├── mcp_server.py          # MCP server (search_trending tool for Claude Code)
 ├── main.py                # Collect + dedup + ingest orchestration
-├── models.py              # Repo dataclass
+├── community.py           # HN / Zenn / Hatena collection → community-posts
+├── models.py              # Repo / Post dataclasses
+├── Makefile               # setup / collect / dry-run / search / test / lint
 ├── requirements.txt
 ├── requirements-dev.txt   # ruff / pyright / pytest
 └── ruff.toml              # lint config
@@ -73,6 +82,10 @@ set -a && source .env && set +a
 
 # Skip ossinsight
 .venv/bin/python main.py --skip-ossinsight
+
+# Tests / lint (see `make help` for all targets)
+make test
+make lint
 ```
 
 ### Community posts (HN / Zenn / Hatena Bookmark)
@@ -194,6 +207,7 @@ GitHub trending collector & semantic search — 複数ソースから OSS トレ
 - **収集** (4ソース): GitHub Search API / github.com/trending scrape / JS-TS特化 / ossinsight.io
 - **ingest**: e5 embedding → Qdrant `github-trending` コレクションへ upsert (重複排除)
 - **検索**: 自然言語クエリ + lang/license/stars-min フィルタによるセマンティック検索
+- **統計**: 実行ごとにソース別の件数・所要時間を `oss-radar-stats` コレクションへ snapshot として記録(ヘルスチェックで使用)
 
 ### ディレクトリ構成
 
@@ -205,14 +219,22 @@ oss-radar/
 │   ├── bestofjs.py        # JS/TS 特化 (GitHub Search 代替)
 │   └── ossinsight.py      # ossinsight.io トレンド
 ├── oss_radar/
-│   └── query.py           # SearchClient — embed + Qdrant 共通ヘルパー
+│   ├── query.py           # SearchClient — embed + Qdrant 共通ヘルパー
+│   ├── stats.py           # ソース別件数の snapshot → oss-radar-stats
+│   └── env_check.py       # 危険な設定の起動時警告
 ├── scripts/
-│   └── deploy.sh          # ホスト自動デプロイ (git pull + pip sync)
+│   ├── deploy.sh          # ホスト自動デプロイ (git pull + pip sync)
+│   ├── oss-radar-health.sh # 週次ヘルスチェック (Qdrant 件数 / embed / Discord)
+│   └── logrotate-oss-radar.conf
+├── tests/                 # pytest ユニットテスト (`make test`)
+├── errors/                # 過去のエラー・ハマりどころの記録
 ├── ingest.py              # embed + Qdrant upsert
 ├── search.py              # セマンティック検索 CLI
 ├── mcp_server.py          # MCP サーバー (Claude Code から search_trending ツールを呼ぶ)
 ├── main.py                # 収集 + dedup + ingest オーケストレーション
-├── models.py              # Repo データクラス
+├── community.py           # HN / Zenn / はてブ収集 → community-posts
+├── models.py              # Repo / Post データクラス
+├── Makefile               # setup / collect / dry-run / search / test / lint
 ├── requirements.txt
 ├── requirements-dev.txt   # ruff / pyright / pytest
 └── ruff.toml              # lint 設定
@@ -253,6 +275,10 @@ set -a && source .env && set +a
 
 # ossinsight スキップ
 .venv/bin/python main.py --skip-ossinsight
+
+# テスト / lint (ターゲット一覧は `make help`)
+make test
+make lint
 ```
 
 ### コミュニティ記事 (HN / Zenn / はてなブックマーク)
