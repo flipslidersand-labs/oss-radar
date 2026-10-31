@@ -14,49 +14,36 @@ _BASE = "https://api.github.com/search/repositories"
 
 
 def _fetch_lang(lang: str, headers: dict, since: str, per_lang: int, now: str) -> list[Repo]:
-    try:
-        r = httpx.get(
-            _BASE,
-            params={
-                "q": f"language:{lang} pushed:>{since} stars:>500",
-                "sort": "stars",
-                "order": "desc",
-                "per_page": per_lang,
-            },
-            headers=headers,
-            timeout=30.0,
-        )
-        r.raise_for_status()
-    except httpx.HTTPStatusError as e:
-        if e.response.status_code == 429:
-            retry_after = int(e.response.headers.get("Retry-After", 60))
-            print(f"  [bestofjs] {lang}: 429 rate-limited, retry in {retry_after}s")
-            time.sleep(retry_after)
-            try:
-                r = httpx.get(
-                    _BASE,
-                    params={
-                        "q": f"language:{lang} pushed:>{since} stars:>500",
-                        "sort": "stars",
-                        "order": "desc",
-                        "per_page": per_lang,
-                    },
-                    headers=headers,
-                    timeout=30.0,
-                )
-                r.raise_for_status()
-            except httpx.HTTPStatusError as retry_e:
-                print(f"  [bestofjs] {lang}: retry failed — HTTP {retry_e.response.status_code}")
-                return []
-            except httpx.RequestError as retry_e:
-                print(f"  [bestofjs] {lang}: retry request error — {retry_e}")
-                return []
-        else:
-            print(f"  [bestofjs] {lang}: HTTP {e.response.status_code}")
+    """言語別に取得する。429 のみ Retry-After 秒待って 1 回再試行し、それ以外の失敗は空リスト。
+
+    github_search._get_page は 429 を待たずスキップし 5xx を指数バックオフで再試行する。
+    こちらは検索 API の 1 分窓に当たりやすい JS/TS の 2 リクエストを落とさないよう、意図的に 429 を待つ。
+    """
+    params = {
+        "q": f"language:{lang} pushed:>{since} stars:>500",
+        "sort": "stars",
+        "order": "desc",
+        "per_page": per_lang,
+    }
+    for attempt in range(2):
+        prefix = "retry " if attempt else ""
+        try:
+            r = httpx.get(_BASE, params=params, headers=headers, timeout=30.0)
+            r.raise_for_status()
+            break
+        except httpx.HTTPStatusError as e:
+            code = e.response.status_code
+            if code == 429 and attempt == 0:
+                retry_after = int(e.response.headers.get("Retry-After", 60))
+                print(f"  [bestofjs] {lang}: 429 rate-limited, retry in {retry_after}s")
+                time.sleep(retry_after)
+                continue
+            label = f"{prefix}failed — HTTP {code}" if attempt else f"HTTP {code}"
+            print(f"  [bestofjs] {lang}: {label}")
             return []
-    except httpx.RequestError as e:
-        print(f"  [bestofjs] {lang}: request error — {e}")
-        return []
+        except httpx.RequestError as e:
+            print(f"  [bestofjs] {lang}: {prefix}request error — {e}")
+            return []
 
     repos = []
     for item in r.json().get("items", []):
