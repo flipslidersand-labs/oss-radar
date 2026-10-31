@@ -3,8 +3,9 @@ import hashlib
 from datetime import date
 
 from qdrant_client import QdrantClient
-from qdrant_client.http.exceptions import UnexpectedResponse
 from qdrant_client.models import Distance, PointStruct, VectorParams
+
+from oss_radar.collections import ensure_collection
 
 STATS_COLLECTION = "oss-radar-stats"
 # ダミーベクトル（統計用途なので意味的類似度検索は不要）
@@ -12,17 +13,7 @@ _DUMMY_VECTOR = [0.0]
 
 
 def _ensure_stats_collection(client: QdrantClient) -> None:
-    existing = {c.name for c in client.get_collections().collections}
-    if STATS_COLLECTION not in existing:
-        try:
-            client.create_collection(
-                collection_name=STATS_COLLECTION,
-                vectors_config=VectorParams(size=1, distance=Distance.COSINE),
-            )
-        except UnexpectedResponse as e:
-            # 並行プロセスが先に作成した場合(409)は成功扱い
-            if e.status_code != 409:
-                raise
+    ensure_collection(client, STATS_COLLECTION, VectorParams(size=1, distance=Distance.COSINE))
 
 
 def _make_point_id(date_str: str, source: str) -> int:
