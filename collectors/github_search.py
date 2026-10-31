@@ -60,10 +60,12 @@ def collect(token: str, days_back: int = 7, pages: int = 3) -> list[Repo]:
                 headers=headers,
             )
             for item in data.get("items", []):
+                if not item.get("full_name"):
+                    continue
                 repos.append(Repo(
                     full_name=item["full_name"],
                     description=item.get("description") or "",
-                    stars=item["stargazers_count"],
+                    stars=item.get("stargazers_count", 0),
                     lang=item.get("language"),
                     topics=item.get("topics", []),
                     license=(item.get("license") or {}).get("spdx_id"),
