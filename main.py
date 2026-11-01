@@ -18,17 +18,18 @@ from datetime import UTC, datetime
 import click
 from dotenv import load_dotenv
 
+from oss_radar.defaults import DEFAULT_COLLECTION, DEFAULT_EMBED_COLLECTION, DEFAULT_EMBED_URL, DEFAULT_QDRANT_URL
 from oss_radar.env_check import insecure_embed_url_warning
 
 load_dotenv()
 
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
-QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
+QDRANT_URL = os.getenv("QDRANT_URL", DEFAULT_QDRANT_URL)
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY", "")
-EMBED_URL = os.getenv("EMBED_URL", "http://localhost:9092/embed/batch")
+EMBED_URL = os.getenv("EMBED_URL", DEFAULT_EMBED_URL)
 EMBED_API_KEY = os.getenv("EMBED_API_KEY", "")
-EMBED_COLLECTION = os.getenv("EMBED_COLLECTION", "sessions")  # embedding-svc モデルルーティング用
-COLLECTION = os.getenv("COLLECTION", "github-trending")
+EMBED_COLLECTION = os.getenv("EMBED_COLLECTION", DEFAULT_EMBED_COLLECTION)  # embedding-svc モデルルーティング用
+COLLECTION = os.getenv("COLLECTION", DEFAULT_COLLECTION)
 
 
 def _check_env(dry_run: bool) -> None:

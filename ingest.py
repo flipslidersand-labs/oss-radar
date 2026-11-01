@@ -11,6 +11,7 @@ from qdrant_client.models import (
 
 from models import Repo
 from oss_radar.collections import ensure_collection
+from oss_radar.defaults import DEFAULT_EMBED_COLLECTION
 from oss_radar.embed import post_embed
 
 VECTOR_SIZE = 768  # MINIPC e5 model output dim
@@ -18,7 +19,7 @@ BATCH_SIZE = 64
 
 
 def _embed(
-    texts: list[str], embed_url: str, api_key: str = "", embed_collection: str = "sessions"
+    texts: list[str], embed_url: str, api_key: str = "", embed_collection: str = DEFAULT_EMBED_COLLECTION
 ) -> list[list[float]]:
     with httpx.Client(timeout=180.0) as client:
         return post_embed(client, embed_url, texts, embed_collection, "index", api_key)
@@ -48,7 +49,7 @@ def ingest(
     embed_url: str,
     collection: str,
     embed_api_key: str = "",
-    embed_collection: str = "sessions",
+    embed_collection: str = DEFAULT_EMBED_COLLECTION,
     qdrant_api_key: str = "",
 ) -> int:
     if not repos:
