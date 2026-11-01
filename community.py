@@ -13,14 +13,21 @@ import time
 import click
 from dotenv import load_dotenv
 
+from oss_radar.defaults import (
+    DEFAULT_COMMUNITY_COLLECTION,
+    DEFAULT_EMBED_COLLECTION,
+    DEFAULT_EMBED_URL,
+    DEFAULT_QDRANT_URL,
+)
+
 load_dotenv()
 
-QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
+QDRANT_URL = os.getenv("QDRANT_URL", DEFAULT_QDRANT_URL)
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY", "")
-EMBED_URL = os.getenv("EMBED_URL", "http://localhost:9092/embed/batch")
+EMBED_URL = os.getenv("EMBED_URL", DEFAULT_EMBED_URL)
 EMBED_API_KEY = os.getenv("EMBED_API_KEY", "")
-EMBED_COLLECTION = os.getenv("EMBED_COLLECTION", "sessions")
-COMMUNITY_COLLECTION = os.getenv("COMMUNITY_COLLECTION", "community-posts")
+EMBED_COLLECTION = os.getenv("EMBED_COLLECTION", DEFAULT_EMBED_COLLECTION)
+COMMUNITY_COLLECTION = os.getenv("COMMUNITY_COLLECTION", DEFAULT_COMMUNITY_COLLECTION)
 
 
 def dedup(posts) -> list:

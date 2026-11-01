@@ -7,6 +7,7 @@ import httpx
 from qdrant_client import QdrantClient
 from qdrant_client.models import DatetimeRange, FieldCondition, Filter, MatchValue, Range
 
+from oss_radar.defaults import DEFAULT_EMBED_COLLECTION
 from oss_radar.embed import post_embed
 
 
@@ -39,7 +40,7 @@ class SearchClient:
         qdrant_url: str,
         embed_url: str,
         api_key: str = "",
-        embed_collection: str = "sessions",
+        embed_collection: str = DEFAULT_EMBED_COLLECTION,
         qdrant_api_key: str = "",
     ) -> None:
         self._embed_url = embed_url
