@@ -1,4 +1,5 @@
 """models.Repo.embed_text() / to_payload() の分岐"""
+
 import sys
 from pathlib import Path
 
@@ -8,8 +9,16 @@ from models import Repo
 
 
 def _repo(**kw) -> Repo:
-    base = dict(full_name="org/repo", description="a lib", stars=7, lang="Go", topics=["cli", "tui"],
-                license="MIT", source="github_search", fetched_at="2026-01-01T00:00:00+00:00")
+    base = dict(
+        full_name="org/repo",
+        description="a lib",
+        stars=7,
+        lang="Go",
+        topics=["cli", "tui"],
+        license="MIT",
+        source="github_search",
+        fetched_at="2026-01-01T00:00:00+00:00",
+    )
     base.update(kw)
     return Repo(**base)
 
@@ -37,8 +46,13 @@ def test_embed_text_name_only():
 def test_to_payload_all_fields():
     p = _repo().to_payload()
     assert p == {
-        "full_name": "org/repo", "description": "a lib", "stars": 7, "lang": "Go",
-        "topics": ["cli", "tui"], "license": "MIT", "source": "github_search",
+        "full_name": "org/repo",
+        "description": "a lib",
+        "stars": 7,
+        "lang": "Go",
+        "topics": ["cli", "tui"],
+        "license": "MIT",
+        "source": "github_search",
         "fetched_at": "2026-01-01T00:00:00+00:00",
     }
 

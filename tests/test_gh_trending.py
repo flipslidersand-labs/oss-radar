@@ -1,4 +1,5 @@
 """collectors.gh_trending.collect() — HTML パースとフォールバック"""
+
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch

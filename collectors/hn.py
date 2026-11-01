@@ -1,4 +1,5 @@
 """Hacker News — front page 収集 (Algolia API, キー不要)"""
+
 import logging
 from datetime import UTC, datetime
 
@@ -19,14 +20,16 @@ def _parse(hits: list[dict], now: str) -> list[Post]:
         if not title or not oid:
             continue
         discussion = f"https://news.ycombinator.com/item?id={oid}"
-        posts.append(Post(
-            url=h.get("url") or discussion,  # Ask HN 等は url 無し
-            title=title,
-            score=int(h.get("points") or 0),
-            source="hn",
-            fetched_at=now,
-            discussion_url=discussion,
-        ))
+        posts.append(
+            Post(
+                url=h.get("url") or discussion,  # Ask HN 等は url 無し
+                title=title,
+                score=int(h.get("points") or 0),
+                source="hn",
+                fetched_at=now,
+                discussion_url=discussion,
+            )
+        )
     return posts
 
 

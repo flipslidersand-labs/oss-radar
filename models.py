@@ -51,6 +51,7 @@ class Repo:
 @dataclass
 class Post:
     """技術者コミュニティの投稿(HN/Zenn/はてブ等)。url を重複排除キーにする。"""
+
     url: str
     title: str
     score: int

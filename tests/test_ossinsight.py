@@ -1,4 +1,5 @@
 """collectors.ossinsight._fetch_lang() のユニットテスト (httpx mock)"""
+
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock

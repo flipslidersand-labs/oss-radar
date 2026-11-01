@@ -1,4 +1,5 @@
 """community.dedup() と Post.to_payload() のテスト"""
+
 import sys
 from pathlib import Path
 

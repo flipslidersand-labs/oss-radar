@@ -1,4 +1,5 @@
 """はてなブックマーク — テクノロジー人気/新着エントリ RSS (RSS 1.0 / RDF, キー不要)"""
+
 import logging
 import xml.etree.ElementTree as ET
 from datetime import UTC, datetime
@@ -30,10 +31,16 @@ def _parse(xml_text: str, now: str) -> list[Post]:
             score = int(item.findtext("hatena:bookmarkcount", namespaces=_NS) or 0)
         except ValueError:
             score = 0
-        posts.append(Post(
-            url=link, title=title, score=score, source="hatena", fetched_at=now,
-            discussion_url=f"https://b.hatena.ne.jp/entry/{link}",
-        ))
+        posts.append(
+            Post(
+                url=link,
+                title=title,
+                score=score,
+                source="hatena",
+                fetched_at=now,
+                discussion_url=f"https://b.hatena.ne.jp/entry/{link}",
+            )
+        )
     return posts
 
 

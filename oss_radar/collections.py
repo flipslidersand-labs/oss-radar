@@ -1,4 +1,5 @@
 """Qdrant コレクション作成の共通ヘルパー"""
+
 from qdrant_client import QdrantClient
 from qdrant_client.http.exceptions import UnexpectedResponse
 from qdrant_client.models import VectorParams
