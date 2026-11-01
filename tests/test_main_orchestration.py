@@ -91,3 +91,19 @@ def test_snapshot_failure_is_swallowed_and_continues():
     assert result.exit_code == 0
     assert snap.call_count == 4  # 4 ソースとも試行する
     assert "stats upsert" in result.stderr
+
+
+def test_sources_numbered_and_ordered():
+    result, _, _, _ = _run(("--skip-bestofjs",))
+    out = result.output
+    assert out.index("[1/4] GitHub Search API") < out.index("[2/4] github.com/trending")
+    assert "[3/4] bestofjs … スキップ" in out
+    assert out.index("[3/4]") < out.index("[4/4] ossinsight.io")
+
+
+def test_snapshot_recorded_only_for_sources_that_succeeded():
+    # 全バリアントが失敗したソースは 0 件の snapshot を記録しない(github_search 等と揃える)
+    _, summary, _, snap = _run(ght=RuntimeError("503"), gs=RuntimeError("boom"))
+    recorded = {c.args[1] for c in snap.call_args_list}
+    assert recorded == {"bestofjs", "ossinsight"}
+    assert summary["sources"]["gh_trending"] == 0
