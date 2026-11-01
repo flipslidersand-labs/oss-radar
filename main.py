@@ -35,8 +35,6 @@ def _check_env(dry_run: bool) -> None:
     warnings = []
     if not dry_run and not EMBED_API_KEY:
         warnings.append("EMBED_API_KEY が未設定です。embedding-svc の認証に失敗します (.env を確認してください)")
-    if not dry_run and not EMBED_URL and not os.getenv("EMBED_URL"):
-        warnings.append(f"EMBED_URL がデフォルト値 ({EMBED_URL}) のままです。外部ネットワークからは到達できません")
     insecure = insecure_embed_url_warning(EMBED_URL, EMBED_API_KEY)
     if not dry_run and insecure:
         warnings.append(insecure)

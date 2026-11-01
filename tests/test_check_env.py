@@ -46,8 +46,11 @@ def test_warns_on_insecure_http_remote(monkeypatch, capsys):
     assert "平文で送信" in err
 
 
-def test_default_url_branch_never_fires(monkeypatch, capsys):
-    """EMBED_URL はモジュール読み込み時にデフォルト値が入るため「デフォルトのまま」警告は発火しない(現状の挙動を固定)。
-    発火させるなら条件を `not os.getenv("EMBED_URL")` に直す必要がある(別途判断)。"""
+def test_default_localhost_url_is_not_warned(monkeypatch, capsys):
+    """既定の localhost 構成(EMBED_URL 未設定)では、キーがあれば警告しない。
+
+    以前あった「デフォルトのまま」分岐は、EMBED_URL が常にデフォルト値を持つため
+    発火しないデッドコードだったので削除した(#97)。
+    """
     err = _run(monkeypatch, capsys, dry_run=False, api_key="k", url="http://localhost:9092/embed/batch", env_url=None)
-    assert "デフォルト値" not in err
+    assert err == ""
