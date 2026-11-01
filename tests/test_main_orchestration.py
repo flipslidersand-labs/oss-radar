@@ -1,4 +1,5 @@
 """main.main(): ソース別の失敗継続・スキップ・dry-run・stats 例外の握りつぶし・サマリー JSON"""
+
 import json
 import sys
 from contextlib import ExitStack
@@ -19,6 +20,7 @@ def _repo(name: str) -> Repo:
 
 def _run(args=(), *, token="tok", gs=None, ght=None, bj=None, oi=None, ingest_count=3, snapshot=None):
     """gs/ght/bj/oi: 戻り値(list) か例外。未指定は 1 件返す。"""
+
     def mk(v, default):
         v = default if v is None else v
         return {"side_effect": v} if isinstance(v, Exception) else {"return_value": v}

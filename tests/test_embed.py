@@ -1,4 +1,5 @@
 """oss_radar.embed.post_embed"""
+
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock

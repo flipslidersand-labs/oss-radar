@@ -1,4 +1,5 @@
 """collectors.hn._parse() のユニットテスト"""
+
 import sys
 from pathlib import Path
 

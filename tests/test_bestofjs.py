@@ -1,4 +1,5 @@
 """collectors.bestofjs — レスポンス欠落キーへの耐性"""
+
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch

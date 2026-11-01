@@ -6,6 +6,7 @@ Usage:
     python community.py               # community-posts コレクションへ ingest
 検索: COLLECTION=community-posts python search.py "クエリ"
 """
+
 import os
 import time
 

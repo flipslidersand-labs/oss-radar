@@ -1,4 +1,5 @@
 """oss_radar.collections.ensure_collection"""
+
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock

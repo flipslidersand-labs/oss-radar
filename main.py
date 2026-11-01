@@ -6,6 +6,7 @@ Usage:
     python main.py --skip-ossinsight  # ossinsight をスキップ
     python main.py --dry-run          # dedup 結果だけ表示、Qdrant には書かない
 """
+
 import json
 import os
 import sys
@@ -61,6 +62,7 @@ class Source:
               (例: gh_trending の daily / weekly)。
     skip: (理由, stderr に出すか)。指定時は収集せず件数 0 とする。
     """
+
     name: str
     title: str
     variants: list[tuple[str, Callable[[], list]]]
@@ -86,21 +88,25 @@ def main(skip_ossinsight: bool, skip_bestofjs: bool, days_back: int, dry_run: bo
 
     sources = [
         Source(
-            "github_search", "GitHub Search API",
+            "github_search",
+            "GitHub Search API",
             [("", lambda: github_search.collect(GITHUB_TOKEN, days_back=days_back))],
             skip=None if GITHUB_TOKEN else ("GITHUB_TOKEN 未設定、スキップ", True),
         ),
         Source(
-            "gh_trending", "github.com/trending",
+            "gh_trending",
+            "github.com/trending",
             [(since, lambda since=since: gh_trending.collect(since=since)) for since in ("daily", "weekly")],
         ),
         Source(
-            "bestofjs", "JS/TS (bestofjs via GitHub Search)",
+            "bestofjs",
+            "JS/TS (bestofjs via GitHub Search)",
             [("", lambda: bestofjs.collect(token=GITHUB_TOKEN, days_back=days_back))],
             skip=("スキップ", False) if skip_bestofjs else None,
         ),
         Source(
-            "ossinsight", "ossinsight.io",
+            "ossinsight",
+            "ossinsight.io",
             [("", ossinsight.collect)],
             skip=("スキップ", False) if skip_ossinsight else None,
         ),

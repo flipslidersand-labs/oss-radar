@@ -1,4 +1,5 @@
 """collectors.github_search — rate limit / retry ハンドリングのユニットテスト"""
+
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, call, patch
@@ -13,14 +14,13 @@ from github_search import _get_page, collect
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
+
 def _make_response(status: int, body: dict | None = None, headers: dict | None = None):
     resp = MagicMock(spec=httpx.Response)
     resp.status_code = status
     resp.headers = headers or {}
     if status >= 400:
-        resp.raise_for_status.side_effect = httpx.HTTPStatusError(
-            f"HTTP {status}", request=MagicMock(), response=resp
-        )
+        resp.raise_for_status.side_effect = httpx.HTTPStatusError(f"HTTP {status}", request=MagicMock(), response=resp)
     else:
         resp.raise_for_status.return_value = None
         resp.json.return_value = body or {}
@@ -34,6 +34,7 @@ def _mock_client(*responses):
 
 
 # ── _get_page ─────────────────────────────────────────────────────────────────
+
 
 def test_get_page_success():
     payload = {"items": [{"full_name": "org/repo"}]}

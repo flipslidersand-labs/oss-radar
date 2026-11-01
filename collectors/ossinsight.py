@@ -3,6 +3,7 @@
 v1/trends/repos エンドポイント使用。
 旧 /v1/collections/{slug}/ranking/repos は廃止済み（404）。
 """
+
 import logging
 from datetime import UTC, datetime
 
@@ -61,16 +62,18 @@ def _fetch_lang(client: httpx.Client, lang: str, now: str) -> list[Repo]:
             stars = int(item.get("stars", 0) or 0)
         except (ValueError, TypeError):
             stars = 0
-        repos.append(Repo(
-            full_name=full_name,
-            description=item.get("description") or "",
-            stars=stars,
-            lang=item.get("primary_language"),
-            topics=[],
-            license=None,
-            source="ossinsight",
-            fetched_at=now,
-        ))
+        repos.append(
+            Repo(
+                full_name=full_name,
+                description=item.get("description") or "",
+                stars=stars,
+                lang=item.get("primary_language"),
+                topics=[],
+                license=None,
+                source="ossinsight",
+                fetched_at=now,
+            )
+        )
     return repos
 
 

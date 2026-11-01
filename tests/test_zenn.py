@@ -1,4 +1,5 @@
 """collectors.zenn._parse() のユニットテスト"""
+
 import sys
 from pathlib import Path
 

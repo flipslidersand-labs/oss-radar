@@ -1,4 +1,5 @@
 """Repo / Post の point_id は既存 Qdrant コレクションの ID と一致し続ける(変更禁止の固定値)"""
+
 import sys
 from pathlib import Path
 

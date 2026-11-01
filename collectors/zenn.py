@@ -1,4 +1,5 @@
 """Zenn — トレンド + トピック別 RSS (キー不要)。RSS に点数は無いので score=0。"""
+
 import logging
 import xml.etree.ElementTree as ET
 from datetime import UTC, datetime

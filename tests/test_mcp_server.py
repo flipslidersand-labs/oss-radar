@@ -1,4 +1,5 @@
 """mcp_server: on_list_tools のスキーマと on_call_tool の各分岐"""
+
 import asyncio
 import json
 import sys
@@ -89,12 +90,36 @@ def test_filters_forwarded():
 
 
 def test_payload_none_fields_become_defaults():
-    r = _call({"query": "x"}, client=_client([_hit(0.123456, {"full_name": "o/r", "lang": None, "license": None,
-                                                            "description": None, "topics": None, "source": None})]))
+    r = _call(
+        {"query": "x"},
+        client=_client(
+            [
+                _hit(
+                    0.123456,
+                    {
+                        "full_name": "o/r",
+                        "lang": None,
+                        "license": None,
+                        "description": None,
+                        "topics": None,
+                        "source": None,
+                    },
+                )
+            ]
+        ),
+    )
     (row,) = json.loads(_text(r))
     assert r["isError"] is False
-    assert row == {"score": 0.1235, "full_name": "o/r", "stars": 0, "lang": "", "license": "",
-                   "description": "", "topics": [], "source": ""}
+    assert row == {
+        "score": 0.1235,
+        "full_name": "o/r",
+        "stars": 0,
+        "lang": "",
+        "license": "",
+        "description": "",
+        "topics": [],
+        "source": "",
+    }
 
 
 def test_payload_none_whole_does_not_crash():

@@ -1,4 +1,5 @@
 """Embed + Qdrant upsert"""
+
 import httpx
 from qdrant_client import QdrantClient
 from qdrant_client.models import (
@@ -63,12 +64,12 @@ def ingest(
         vectors = _embed(texts, embed_url, embed_api_key, embed_collection)
         if len(vectors) != len(batch):
             raise ValueError(
-                f"embed mismatch at batch {i//BATCH_SIZE}: sent {len(batch)} texts, got {len(vectors)} vectors"
+                f"embed mismatch at batch {i // BATCH_SIZE}: sent {len(batch)} texts, got {len(vectors)} vectors"
             )
         bad = next((len(v) for v in vectors if len(v) != VECTOR_SIZE), None)
         if bad is not None:
             raise ValueError(
-                f"vector dim mismatch at batch {i//BATCH_SIZE}: expected {VECTOR_SIZE}, got {bad}"
+                f"vector dim mismatch at batch {i // BATCH_SIZE}: expected {VECTOR_SIZE}, got {bad}"
                 " (embedding モデルが変わった可能性。コレクションの作り直しが必要)"
             )
 

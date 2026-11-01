@@ -25,7 +25,7 @@ headers = {"X-API-Key": api_key}  # Bearer ではなく X-API-Key
 body = {
     "texts": [...],
     "collection": "sessions",  # embedding-svc 側のモデルルーティング用
-    "mode": "index",           # index (格納時) or search (検索時)。"query" は無効
+    "mode": "index",  # index (格納時) or search (検索時)。"query" は無効
 }
 response = httpx.post(url, json=body, headers=headers)
 vectors = response.json()["vectors"]  # "embeddings" ではなく "vectors"

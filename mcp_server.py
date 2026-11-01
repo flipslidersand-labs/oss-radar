@@ -21,6 +21,7 @@ Claude Code から直接 github-trending コレクションをセマンティッ
         }
     }
 """
+
 import asyncio
 import json
 import os
@@ -135,8 +136,14 @@ async def on_call_tool(ctx, params) -> types.CallToolResult:
 
     try:
         results = _get_client().search(
-            query, COLLECTION, lang=lang, license_=license_,
-            stars_min=stars_min, source=source, since=since, limit=limit,
+            query,
+            COLLECTION,
+            lang=lang,
+            license_=license_,
+            stars_min=stars_min,
+            source=source,
+            since=since,
+            limit=limit,
         )
     except Exception as e:
         return types.CallToolResult(
@@ -153,16 +160,18 @@ async def on_call_tool(ctx, params) -> types.CallToolResult:
     rows = []
     for r in results:
         p = r.payload or {}
-        rows.append({
-            "score": round(r.score, 4),
-            "full_name": p.get("full_name", ""),
-            "stars": p.get("stars", 0),
-            "lang": p.get("lang") or "",
-            "license": p.get("license") or "",
-            "description": p.get("description") or "",
-            "topics": p.get("topics") or [],
-            "source": p.get("source") or "",
-        })
+        rows.append(
+            {
+                "score": round(r.score, 4),
+                "full_name": p.get("full_name", ""),
+                "stars": p.get("stars", 0),
+                "lang": p.get("lang") or "",
+                "license": p.get("license") or "",
+                "description": p.get("description") or "",
+                "topics": p.get("topics") or [],
+                "source": p.get("source") or "",
+            }
+        )
 
     return types.CallToolResult(
         content=[types.TextContent(type="text", text=json.dumps(rows, ensure_ascii=False, indent=2))],
@@ -172,6 +181,7 @@ async def on_call_tool(ctx, params) -> types.CallToolResult:
 
 def _check_env() -> None:
     import sys
+
     warnings = []
     if not EMBED_API_KEY:
         warnings.append("EMBED_API_KEY が未設定です。embedding-svc の認証に失敗します")

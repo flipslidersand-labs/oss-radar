@@ -1,4 +1,5 @@
 """main._check_env() の警告分岐"""
+
 import sys
 from pathlib import Path
 
@@ -29,7 +30,14 @@ def test_no_warning_when_dry_run(monkeypatch, capsys):
 
 
 def test_no_warning_when_configured_https(monkeypatch, capsys):
-    err = _run(monkeypatch, capsys, dry_run=False, api_key="k", url="https://example.com/embed", env_url="https://example.com/embed")
+    err = _run(
+        monkeypatch,
+        capsys,
+        dry_run=False,
+        api_key="k",
+        url="https://example.com/embed",
+        env_url="https://example.com/embed",
+    )
     assert err == ""
 
 

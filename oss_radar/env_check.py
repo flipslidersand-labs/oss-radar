@@ -1,4 +1,5 @@
 """環境変数の安全性チェック(起動時警告用)"""
+
 from urllib.parse import urlparse
 
 _LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1"}
