@@ -24,7 +24,9 @@ def _mock_embed_response(vector: list[float] | None = None):
 # ── SearchClient ──────────────────────────────────────────────────────────────
 
 
-def _make_client(qdrant_mock: MagicMock | None = None) -> tuple[SearchClient, MagicMock]:
+def _make_client(
+    qdrant_mock: MagicMock | None = None,
+) -> tuple[SearchClient, MagicMock]:
     if qdrant_mock is None:
         qdrant_mock = MagicMock()
     with patch("oss_radar.query.QdrantClient", return_value=qdrant_mock):
@@ -70,7 +72,9 @@ def test_embed_no_header_when_empty_key():
 
 def test_embed_propagates_http_error():
     response = MagicMock(spec=httpx.Response)
-    response.raise_for_status.side_effect = httpx.HTTPStatusError("401", request=MagicMock(), response=response)
+    response.raise_for_status.side_effect = httpx.HTTPStatusError(
+        "401", request=MagicMock(), response=response
+    )
     with pytest.raises(httpx.HTTPStatusError):
         _embed_client(response=response)._embed("q")
 

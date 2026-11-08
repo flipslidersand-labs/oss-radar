@@ -15,7 +15,10 @@ def _p(url, score, source="hn"):
 
 def test_dedup_keeps_highest_score_per_url():
     out = dedup([_p("u", 1), _p("u", 9, "hatena"), _p("v", 2), _p("", 5)])
-    assert {(p.url, p.score, p.source) for p in out} == {("u", 9, "hatena"), ("v", 2, "hn")}
+    assert {(p.url, p.score, p.source) for p in out} == {
+        ("u", 9, "hatena"),
+        ("v", 2, "hn"),
+    }
 
 
 def test_payload_has_search_compat_keys():

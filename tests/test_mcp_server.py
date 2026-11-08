@@ -41,7 +41,9 @@ def test_list_tools_schema():
     (tool,) = r["tools"]
     assert tool["name"] == "search_trending"
     assert tool["inputSchema"]["required"] == ["query"]
-    assert {"lang", "license", "stars_min", "source", "since", "limit"} <= set(tool["inputSchema"]["properties"])
+    assert {"lang", "license", "stars_min", "source", "since", "limit"} <= set(
+        tool["inputSchema"]["properties"]
+    )
 
 
 def test_unknown_tool_is_error():
@@ -82,7 +84,14 @@ def test_limit_clamped_to_50():
 
 def test_filters_forwarded():
     c = _client([])
-    args = {"query": "x", "lang": "Go", "license": "MIT", "stars_min": 10, "source": "s", "since": "2026-01-01"}
+    args = {
+        "query": "x",
+        "lang": "Go",
+        "license": "MIT",
+        "stars_min": 10,
+        "source": "s",
+        "since": "2026-01-01",
+    }
     _call(args, client=c)
     kw = c.search.call_args.kwargs
     got = (kw["lang"], kw["license_"], kw["stars_min"], kw["source"], kw["since"])

@@ -75,7 +75,9 @@ def test_ensure_stats_collection_skips_when_exists():
 def test_ensure_stats_collection_ignores_409_from_concurrent_create():
     client = MagicMock()
     client.get_collections.return_value.collections = []
-    client.create_collection.side_effect = UnexpectedResponse(409, "x", b"already exists", {})
+    client.create_collection.side_effect = UnexpectedResponse(
+        409, "x", b"already exists", {}
+    )
 
     _ensure_stats_collection(client)  # 例外にならない
 
@@ -93,7 +95,9 @@ def test_ensure_stats_collection_reraises_non_409():
 
 
 def test_record_snapshot_upserts_correct_payload():
-    with patch("oss_radar.stats.QdrantClient") as mock_qdrant_cls, patch("oss_radar.stats.date") as mock_date:
+    with patch("oss_radar.stats.QdrantClient") as mock_qdrant_cls, patch(
+        "oss_radar.stats.date"
+    ) as mock_date:
         mock_date.today.return_value.isoformat.return_value = "2026-08-26"
 
         mock_qdrant = MagicMock()
@@ -117,7 +121,9 @@ def test_record_snapshot_upserts_correct_payload():
 
 
 def test_record_snapshot_vector_is_dummy():
-    with patch("oss_radar.stats.QdrantClient") as mock_qdrant_cls, patch("oss_radar.stats.date") as mock_date:
+    with patch("oss_radar.stats.QdrantClient") as mock_qdrant_cls, patch(
+        "oss_radar.stats.date"
+    ) as mock_date:
         mock_date.today.return_value.isoformat.return_value = "2026-08-26"
 
         mock_qdrant = MagicMock()
@@ -133,7 +139,9 @@ def test_record_snapshot_vector_is_dummy():
 
 
 def test_record_snapshot_point_id_matches_helper():
-    with patch("oss_radar.stats.QdrantClient") as mock_qdrant_cls, patch("oss_radar.stats.date") as mock_date:
+    with patch("oss_radar.stats.QdrantClient") as mock_qdrant_cls, patch(
+        "oss_radar.stats.date"
+    ) as mock_date:
         mock_date.today.return_value.isoformat.return_value = "2026-08-26"
 
         mock_qdrant = MagicMock()

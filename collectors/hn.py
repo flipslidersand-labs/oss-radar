@@ -36,8 +36,12 @@ def _parse(hits: list[dict], now: str) -> list[Post]:
 def collect(hits_per_page: int = 100) -> list[Post]:
     now = datetime.now(UTC).isoformat()
     try:
-        with httpx.Client(timeout=30.0, headers={"User-Agent": "oss-radar/1.0"}) as client:
-            r = client.get(_URL, params={"tags": "front_page", "hitsPerPage": hits_per_page})
+        with httpx.Client(
+            timeout=30.0, headers={"User-Agent": "oss-radar/1.0"}
+        ) as client:
+            r = client.get(
+                _URL, params={"tags": "front_page", "hitsPerPage": hits_per_page}
+            )
             r.raise_for_status()
     except (httpx.HTTPStatusError, httpx.RequestError) as e:
         logger.warning("hn fetch error: %s", e)

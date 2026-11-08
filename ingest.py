@@ -19,7 +19,10 @@ BATCH_SIZE = 64
 
 
 def _embed(
-    texts: list[str], embed_url: str, api_key: str = "", embed_collection: str = DEFAULT_EMBED_COLLECTION
+    texts: list[str],
+    embed_url: str,
+    api_key: str = "",
+    embed_collection: str = DEFAULT_EMBED_COLLECTION,
 ) -> list[list[float]]:
     with httpx.Client(timeout=180.0) as client:
         return post_embed(client, embed_url, texts, embed_collection, "index", api_key)
@@ -34,7 +37,9 @@ _PAYLOAD_INDEXES: list[tuple[str, PayloadSchemaType]] = [
 
 
 def _ensure_collection(client: QdrantClient, collection: str) -> None:
-    ensure_collection(client, collection, VectorParams(size=VECTOR_SIZE, distance=Distance.COSINE))
+    ensure_collection(
+        client, collection, VectorParams(size=VECTOR_SIZE, distance=Distance.COSINE)
+    )
     for field, schema_type in _PAYLOAD_INDEXES:
         client.create_payload_index(
             collection_name=collection,

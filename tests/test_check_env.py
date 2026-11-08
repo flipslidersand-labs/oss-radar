@@ -20,12 +20,20 @@ def _run(monkeypatch, capsys, *, dry_run, api_key, url, env_url=None):
 
 
 def test_warns_when_api_key_missing(monkeypatch, capsys):
-    err = _run(monkeypatch, capsys, dry_run=False, api_key="", url="http://localhost:9092/embed/batch")
+    err = _run(
+        monkeypatch,
+        capsys,
+        dry_run=False,
+        api_key="",
+        url="http://localhost:9092/embed/batch",
+    )
     assert "EMBED_API_KEY が未設定" in err
 
 
 def test_no_warning_when_dry_run(monkeypatch, capsys):
-    err = _run(monkeypatch, capsys, dry_run=True, api_key="", url="http://example.com/embed")
+    err = _run(
+        monkeypatch, capsys, dry_run=True, api_key="", url="http://example.com/embed"
+    )
     assert err == ""
 
 
@@ -42,7 +50,13 @@ def test_no_warning_when_configured_https(monkeypatch, capsys):
 
 
 def test_warns_on_insecure_http_remote(monkeypatch, capsys):
-    err = _run(monkeypatch, capsys, dry_run=False, api_key="k", url="http://embed.internal:9092/embed/batch")
+    err = _run(
+        monkeypatch,
+        capsys,
+        dry_run=False,
+        api_key="k",
+        url="http://embed.internal:9092/embed/batch",
+    )
     assert "平文で送信" in err
 
 
@@ -52,5 +66,12 @@ def test_default_localhost_url_is_not_warned(monkeypatch, capsys):
     以前あった「デフォルトのまま」分岐は、EMBED_URL が常にデフォルト値を持つため
     発火しないデッドコードだったので削除した(#97)。
     """
-    err = _run(monkeypatch, capsys, dry_run=False, api_key="k", url="http://localhost:9092/embed/batch", env_url=None)
+    err = _run(
+        monkeypatch,
+        capsys,
+        dry_run=False,
+        api_key="k",
+        url="http://localhost:9092/embed/batch",
+        env_url=None,
+    )
     assert err == ""

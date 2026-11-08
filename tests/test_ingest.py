@@ -151,7 +151,10 @@ def test_ingest_single_batch():
     repos = [_repo(f"owner/repo-{i}") for i in range(3)]
     vectors = _fake_vectors(3)
 
-    with patch("ingest.QdrantClient") as mock_qdrant_cls, patch("ingest._embed", return_value=vectors):
+    with (
+        patch("ingest.QdrantClient") as mock_qdrant_cls,
+        patch("ingest._embed", return_value=vectors),
+    ):
         mock_qdrant = MagicMock()
         col = MagicMock()
         col.name = "col"
@@ -185,7 +188,10 @@ def test_ingest_wrong_vector_dim_raises_before_upsert():
     repos = [_repo(f"owner/r{i}") for i in range(2)]
     wrong = [[0.1] * (VECTOR_SIZE + 1) for _ in range(2)]
 
-    with patch("ingest.QdrantClient") as mock_qdrant_cls, patch("ingest._embed", return_value=wrong):
+    with (
+        patch("ingest.QdrantClient") as mock_qdrant_cls,
+        patch("ingest._embed", return_value=wrong),
+    ):
         mock_qdrant = MagicMock()
         col = MagicMock()
         col.name = "col"
@@ -209,7 +215,10 @@ def test_ingest_multi_batch():
         call_count += 1
         return _fake_vectors(len(texts))
 
-    with patch("ingest.QdrantClient") as mock_qdrant_cls, patch("ingest._embed", side_effect=fake_embed):
+    with (
+        patch("ingest.QdrantClient") as mock_qdrant_cls,
+        patch("ingest._embed", side_effect=fake_embed),
+    ):
         mock_qdrant = MagicMock()
         col = MagicMock()
         col.name = "col"
@@ -251,7 +260,10 @@ def test_ingest_point_id_deterministic():
 def test_ingest_uses_collection_name():
     repos = [_repo()]
 
-    with patch("ingest.QdrantClient") as mock_qdrant_cls, patch("ingest._embed", return_value=_fake_vectors(1)):
+    with (
+        patch("ingest.QdrantClient") as mock_qdrant_cls,
+        patch("ingest._embed", return_value=_fake_vectors(1)),
+    ):
         mock_qdrant = MagicMock()
         col = MagicMock()
         col.name = "other"
@@ -267,7 +279,10 @@ def test_ingest_uses_collection_name():
 def test_ingest_passes_qdrant_api_key():
     repos = [_repo("owner/repo-0")]
 
-    with patch("ingest.QdrantClient") as mock_qdrant_cls, patch("ingest._embed", return_value=_fake_vectors(1)):
+    with (
+        patch("ingest.QdrantClient") as mock_qdrant_cls,
+        patch("ingest._embed", return_value=_fake_vectors(1)),
+    ):
         mock_qdrant = MagicMock()
         col = MagicMock()
         col.name = "col"
@@ -282,7 +297,10 @@ def test_ingest_passes_qdrant_api_key():
 def test_ingest_qdrant_api_key_empty_becomes_none():
     repos = [_repo("owner/repo-0")]
 
-    with patch("ingest.QdrantClient") as mock_qdrant_cls, patch("ingest._embed", return_value=_fake_vectors(1)):
+    with (
+        patch("ingest.QdrantClient") as mock_qdrant_cls,
+        patch("ingest._embed", return_value=_fake_vectors(1)),
+    ):
         mock_qdrant = MagicMock()
         col = MagicMock()
         col.name = "col"

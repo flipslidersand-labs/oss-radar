@@ -50,7 +50,11 @@ def _fetch_lang(client: httpx.Client, lang: str, now: str) -> list[Repo]:
 
     rows = body.get("data", {}).get("rows", [])
     if not rows:
-        logger.warning("ossinsight returned 0 rows lang=%r (warning=%r)", lang or "all", warning or "none")
+        logger.warning(
+            "ossinsight returned 0 rows lang=%r (warning=%r)",
+            lang or "all",
+            warning or "none",
+        )
         return []
 
     repos = []

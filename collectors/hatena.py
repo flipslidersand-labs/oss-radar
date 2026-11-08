@@ -10,9 +10,15 @@ from models import Post
 
 logger = logging.getLogger(__name__)
 
-FEEDS = ["https://b.hatena.ne.jp/hotentry/it.rss", "https://b.hatena.ne.jp/entrylist/it.rss"]
+FEEDS = [
+    "https://b.hatena.ne.jp/hotentry/it.rss",
+    "https://b.hatena.ne.jp/entrylist/it.rss",
+]
 
-_NS = {"rss": "http://purl.org/rss/1.0/", "hatena": "http://www.hatena.ne.jp/info/xmlns#"}
+_NS = {
+    "rss": "http://purl.org/rss/1.0/",
+    "hatena": "http://www.hatena.ne.jp/info/xmlns#",
+}
 
 
 def _parse(xml_text: str, now: str) -> list[Post]:

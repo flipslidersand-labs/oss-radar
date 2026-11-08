@@ -14,7 +14,12 @@ import os
 import click
 from dotenv import load_dotenv
 
-from oss_radar.defaults import DEFAULT_COLLECTION, DEFAULT_EMBED_COLLECTION, DEFAULT_EMBED_URL, DEFAULT_QDRANT_URL
+from oss_radar.defaults import (
+    DEFAULT_COLLECTION,
+    DEFAULT_EMBED_COLLECTION,
+    DEFAULT_EMBED_URL,
+    DEFAULT_QDRANT_URL,
+)
 from oss_radar.env_check import insecure_embed_url_warning
 from oss_radar.query import SearchClient
 
@@ -31,10 +36,19 @@ COLLECTION = os.getenv("COLLECTION", DEFAULT_COLLECTION)
 @click.command()
 @click.argument("query")
 @click.option("--lang", default=None, help="言語フィルタ (例: Go, Python, Rust)")
-@click.option("--license", "license_", default=None, help="ライセンスフィルタ (例: MIT, Apache-2.0)")
+@click.option(
+    "--license",
+    "license_",
+    default=None,
+    help="ライセンスフィルタ (例: MIT, Apache-2.0)",
+)
 @click.option("--stars-min", default=0, type=int, help="最低スター数")
-@click.option("--source", default=None, help="収集元フィルタ (例: ossinsight, github-trending)")
-@click.option("--since", default=None, help="収集日時フィルタ YYYY-MM-DD (fetched_at >= since)")
+@click.option(
+    "--source", default=None, help="収集元フィルタ (例: ossinsight, github-trending)"
+)
+@click.option(
+    "--since", default=None, help="収集日時フィルタ YYYY-MM-DD (fetched_at >= since)"
+)
 @click.option("--limit", default=10, type=int, help="表示件数")
 def search(
     query: str,
@@ -48,9 +62,18 @@ def search(
     insecure = insecure_embed_url_warning(EMBED_URL, EMBED_API_KEY)
     if insecure:
         click.echo(f"[WARN] {insecure}", err=True)
-    client = SearchClient(QDRANT_URL, EMBED_URL, EMBED_API_KEY, EMBED_COLLECTION, QDRANT_API_KEY)
+    client = SearchClient(
+        QDRANT_URL, EMBED_URL, EMBED_API_KEY, EMBED_COLLECTION, QDRANT_API_KEY
+    )
     results = client.search(
-        query, COLLECTION, lang=lang, license_=license_, stars_min=stars_min, source=source, since=since, limit=limit
+        query,
+        COLLECTION,
+        lang=lang,
+        license_=license_,
+        stars_min=stars_min,
+        source=source,
+        since=since,
+        limit=limit,
     )
 
     if not results:

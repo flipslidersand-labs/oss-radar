@@ -13,7 +13,9 @@ import mcp_server
 def _call(arguments):
     params = SimpleNamespace(name="search_trending", arguments=arguments)
     r = asyncio.run(mcp_server.on_call_tool(None, params))
-    return r.model_dump(by_alias=True)  # mcp のバージョンで属性名が isError/is_error と変わるため別名で比較
+    return r.model_dump(
+        by_alias=True
+    )  # mcp のバージョンで属性名が isError/is_error と変わるため別名で比較
 
 
 def test_non_numeric_stars_min_returns_error():

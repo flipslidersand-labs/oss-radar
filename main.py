@@ -18,7 +18,12 @@ from datetime import UTC, datetime
 import click
 from dotenv import load_dotenv
 
-from oss_radar.defaults import DEFAULT_COLLECTION, DEFAULT_EMBED_COLLECTION, DEFAULT_EMBED_URL, DEFAULT_QDRANT_URL
+from oss_radar.defaults import (
+    DEFAULT_COLLECTION,
+    DEFAULT_EMBED_COLLECTION,
+    DEFAULT_EMBED_URL,
+    DEFAULT_QDRANT_URL,
+)
 from oss_radar.env_check import insecure_embed_url_warning
 
 load_dotenv()
@@ -28,14 +33,18 @@ QDRANT_URL = os.getenv("QDRANT_URL", DEFAULT_QDRANT_URL)
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY", "")
 EMBED_URL = os.getenv("EMBED_URL", DEFAULT_EMBED_URL)
 EMBED_API_KEY = os.getenv("EMBED_API_KEY", "")
-EMBED_COLLECTION = os.getenv("EMBED_COLLECTION", DEFAULT_EMBED_COLLECTION)  # embedding-svc モデルルーティング用
+EMBED_COLLECTION = os.getenv(
+    "EMBED_COLLECTION", DEFAULT_EMBED_COLLECTION
+)  # embedding-svc モデルルーティング用
 COLLECTION = os.getenv("COLLECTION", DEFAULT_COLLECTION)
 
 
 def _check_env(dry_run: bool) -> None:
     warnings = []
     if not dry_run and not EMBED_API_KEY:
-        warnings.append("EMBED_API_KEY が未設定です。embedding-svc の認証に失敗します (.env を確認してください)")
+        warnings.append(
+            "EMBED_API_KEY が未設定です。embedding-svc の認証に失敗します (.env を確認してください)"
+        )
     insecure = insecure_embed_url_warning(EMBED_URL, EMBED_API_KEY)
     if not dry_run and insecure:
         warnings.append(insecure)
@@ -72,7 +81,9 @@ class Source:
 @click.option("--skip-ossinsight", is_flag=True, default=False)
 @click.option("--skip-bestofjs", is_flag=True, default=False)
 @click.option("--days-back", default=7, type=int, help="GitHub Search: 何日前まで対象")
-@click.option("--dry-run", is_flag=True, default=False, help="Qdrant に書かず結果だけ表示")
+@click.option(
+    "--dry-run", is_flag=True, default=False, help="Qdrant に書かず結果だけ表示"
+)
 def main(skip_ossinsight: bool, skip_bestofjs: bool, days_back: int, dry_run: bool):
     from collectors import bestofjs, gh_trending, github_search, ossinsight
     from ingest import ingest
@@ -95,7 +106,10 @@ def main(skip_ossinsight: bool, skip_bestofjs: bool, days_back: int, dry_run: bo
         Source(
             "gh_trending",
             "github.com/trending",
-            [(since, lambda since=since: gh_trending.collect(since=since)) for since in ("daily", "weekly")],
+            [
+                (since, lambda since=since: gh_trending.collect(since=since))
+                for since in ("daily", "weekly")
+            ],
         ),
         Source(
             "bestofjs",
@@ -126,10 +140,17 @@ def main(skip_ossinsight: bool, skip_bestofjs: bool, days_back: int, dry_run: bo
                 repos = collect()
             except Exception as e:
                 click.echo(f"  ✗ {label + ': ' if label else ''}{e}", err=True)
-                errors.append({"source": f"{src.name}/{label}" if label else src.name, "error": str(e)})
+                errors.append(
+                    {
+                        "source": f"{src.name}/{label}" if label else src.name,
+                        "error": str(e),
+                    }
+                )
                 continue
             succeeded = True
-            click.echo(f"  {label}: {len(repos)} repos" if label else f"  → {len(repos)} repos")
+            click.echo(
+                f"  {label}: {len(repos)} repos" if label else f"  → {len(repos)} repos"
+            )
             all_repos.extend(repos)
             source_counts[src.name] += len(repos)
         if succeeded:
@@ -141,7 +162,9 @@ def main(skip_ossinsight: bool, skip_bestofjs: bool, days_back: int, dry_run: bo
     if dry_run:
         click.echo("\n[dry-run] Qdrant への書き込みをスキップ")
         for r in deduped[:10]:
-            click.echo(f"  {r.stars:>6}★  {r.full_name}  [{r.lang}]  {r.description[:60]}")
+            click.echo(
+                f"  {r.stars:>6}★  {r.full_name}  [{r.lang}]  {r.description[:60]}"
+            )
         _emit_summary(
             source_counts=source_counts,
             total_raw=len(all_repos),
@@ -153,7 +176,15 @@ def main(skip_ossinsight: bool, skip_bestofjs: bool, days_back: int, dry_run: bo
         return
 
     click.echo(f"\nQdrant ({COLLECTION}) へ ingest ...")
-    count = ingest(deduped, QDRANT_URL, EMBED_URL, COLLECTION, EMBED_API_KEY, EMBED_COLLECTION, QDRANT_API_KEY)
+    count = ingest(
+        deduped,
+        QDRANT_URL,
+        EMBED_URL,
+        COLLECTION,
+        EMBED_API_KEY,
+        EMBED_COLLECTION,
+        QDRANT_API_KEY,
+    )
     click.echo(f"完了: {count} points upserted")
 
     _emit_summary(

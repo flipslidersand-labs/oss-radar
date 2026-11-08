@@ -30,7 +30,10 @@ def _get_page(client: httpx.Client, params: dict, headers: dict) -> dict:
                 return {}
             if 500 <= code < 600 and attempt < _MAX_RETRIES:
                 wait = 2**attempt
-                print(f"  [github_search] HTTP {code} — retry {attempt + 1}/{_MAX_RETRIES} in {wait}s", file=sys.stderr)
+                print(
+                    f"  [github_search] HTTP {code} — retry {attempt + 1}/{_MAX_RETRIES} in {wait}s",
+                    file=sys.stderr,
+                )
                 time.sleep(wait)
                 continue
             raise

@@ -26,7 +26,11 @@ def test_payload_includes_mode_and_collection():
     http = _http()
     post_embed(http, "http://e", ["a", "b"], "sessions", "index")
     assert http.post.call_args.args == ("http://e",)
-    assert http.post.call_args.kwargs["json"] == {"texts": ["a", "b"], "collection": "sessions", "mode": "index"}
+    assert http.post.call_args.kwargs["json"] == {
+        "texts": ["a", "b"],
+        "collection": "sessions",
+        "mode": "index",
+    }
 
 
 def test_api_key_header_only_when_set():
@@ -38,7 +42,10 @@ def test_api_key_header_only_when_set():
 
 
 def test_returns_vectors():
-    assert post_embed(_http([[1.0], [2.0]]), "http://e", ["a", "b"], "c", "index") == [[1.0], [2.0]]
+    assert post_embed(_http([[1.0], [2.0]]), "http://e", ["a", "b"], "c", "index") == [
+        [1.0],
+        [2.0],
+    ]
 
 
 def test_http_error_propagates():

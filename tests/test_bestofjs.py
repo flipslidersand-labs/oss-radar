@@ -37,12 +37,16 @@ def _err(status: int, headers: dict | None = None):
     resp.status_code = status
     resp.headers = headers or {}
     r = MagicMock()
-    r.raise_for_status.side_effect = httpx.HTTPStatusError(f"HTTP {status}", request=MagicMock(), response=resp)
+    r.raise_for_status.side_effect = httpx.HTTPStatusError(
+        f"HTTP {status}", request=MagicMock(), response=resp
+    )
     return r
 
 
 def _fetch(side_effect):
-    with patch("bestofjs.httpx.get", side_effect=side_effect) as get, patch("bestofjs.time.sleep") as sleep:
+    with patch("bestofjs.httpx.get", side_effect=side_effect) as get, patch(
+        "bestofjs.time.sleep"
+    ) as sleep:
         repos = _fetch_lang("JavaScript", {}, "2026-10-01", 50, "now")
     return repos, get, sleep
 

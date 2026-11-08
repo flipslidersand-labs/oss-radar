@@ -32,7 +32,9 @@ def _string_constants(path: Path) -> set[str]:
     docstrings = {
         id(n.body[0].value)
         for n in ast.walk(tree)
-        if isinstance(n, (ast.Module, ast.FunctionDef, ast.ClassDef, ast.AsyncFunctionDef))
+        if isinstance(
+            n, (ast.Module, ast.FunctionDef, ast.ClassDef, ast.AsyncFunctionDef)
+        )
         and n.body
         and isinstance(n.body[0], ast.Expr)
         and isinstance(n.body[0].value, ast.Constant)
@@ -40,19 +42,30 @@ def _string_constants(path: Path) -> set[str]:
     return {
         n.value
         for n in ast.walk(tree)
-        if isinstance(n, ast.Constant) and isinstance(n.value, str) and id(n) not in docstrings
+        if isinstance(n, ast.Constant)
+        and isinstance(n.value, str)
+        and id(n) not in docstrings
     }
 
 
 def test_default_literals_not_duplicated_outside_defaults():
     offenders = [
-        f"{p.relative_to(ROOT)}: {lit}" for p in _source_files() for lit in LITERALS if lit in _string_constants(p)
+        f"{p.relative_to(ROOT)}: {lit}"
+        for p in _source_files()
+        for lit in LITERALS
+        if lit in _string_constants(p)
     ]
     assert offenders == []
 
 
 def test_entrypoints_use_the_shared_defaults(monkeypatch):
-    for name in ("QDRANT_URL", "EMBED_URL", "EMBED_COLLECTION", "COLLECTION", "COMMUNITY_COLLECTION"):
+    for name in (
+        "QDRANT_URL",
+        "EMBED_URL",
+        "EMBED_COLLECTION",
+        "COLLECTION",
+        "COMMUNITY_COLLECTION",
+    ):
         monkeypatch.delenv(name, raising=False)
     import importlib
 

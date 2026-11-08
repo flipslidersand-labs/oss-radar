@@ -38,7 +38,12 @@ def test_returns_repos_on_success():
     body = {
         "data": {
             "rows": [
-                {"repo_name": "owner/repo", "stars": 500, "description": "desc", "primary_language": "Go"},
+                {
+                    "repo_name": "owner/repo",
+                    "stars": 500,
+                    "description": "desc",
+                    "primary_language": "Go",
+                },
             ]
         }
     }
@@ -63,7 +68,9 @@ def test_404_returns_empty():
 
 def test_request_error_returns_empty():
     client = MagicMock(spec=httpx.Client)
-    client.get.side_effect = httpx.RequestError("connection refused", request=MagicMock())
+    client.get.side_effect = httpx.RequestError(
+        "connection refused", request=MagicMock()
+    )
     assert _fetch_lang(client, "Go", NOW) == []
 
 

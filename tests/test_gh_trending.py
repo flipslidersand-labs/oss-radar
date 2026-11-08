@@ -30,7 +30,9 @@ def _collect(*articles, status_error=False):
     resp = MagicMock()
     resp.text = "<html>" + "".join(articles) + "</html>"
     if status_error:
-        resp.raise_for_status.side_effect = httpx.HTTPStatusError("503", request=MagicMock(), response=resp)
+        resp.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "503", request=MagicMock(), response=resp
+        )
     client = MagicMock()
     client.__enter__.return_value.get.return_value = resp
     with patch("collectors.gh_trending.httpx.Client", return_value=client):

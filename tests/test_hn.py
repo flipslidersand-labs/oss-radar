@@ -11,7 +11,9 @@ NOW = "2026-01-01T00:00:00+00:00"
 
 
 def test_parse_basic():
-    posts = _parse([{"objectID": "1", "title": "T", "url": "https://x.dev/a", "points": 42}], NOW)
+    posts = _parse(
+        [{"objectID": "1", "title": "T", "url": "https://x.dev/a", "points": 42}], NOW
+    )
     assert len(posts) == 1
     p = posts[0]
     assert (p.url, p.title, p.score, p.source) == ("https://x.dev/a", "T", 42, "hn")
@@ -29,5 +31,11 @@ def test_skips_missing_title_or_id():
 
 
 def test_point_id_stable_per_url():
-    a, b = _parse([{"objectID": "1", "title": "A", "url": "u"}, {"objectID": "9", "title": "B", "url": "u"}], NOW)
+    a, b = _parse(
+        [
+            {"objectID": "1", "title": "A", "url": "u"},
+            {"objectID": "9", "title": "B", "url": "u"},
+        ],
+        NOW,
+    )
     assert a.point_id() == b.point_id()

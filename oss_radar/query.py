@@ -5,7 +5,13 @@ search.py と mcp_server.py の両方から使用する。
 
 import httpx
 from qdrant_client import QdrantClient
-from qdrant_client.models import DatetimeRange, FieldCondition, Filter, MatchValue, Range
+from qdrant_client.models import (
+    DatetimeRange,
+    FieldCondition,
+    Filter,
+    MatchValue,
+    Range,
+)
 
 from oss_radar.defaults import DEFAULT_EMBED_COLLECTION
 from oss_radar.embed import post_embed
@@ -22,13 +28,17 @@ def build_filter(
     if lang:
         conditions.append(FieldCondition(key="lang", match=MatchValue(value=lang)))
     if license_:
-        conditions.append(FieldCondition(key="license", match=MatchValue(value=license_)))
+        conditions.append(
+            FieldCondition(key="license", match=MatchValue(value=license_))
+        )
     if stars_min > 0:
         conditions.append(FieldCondition(key="stars", range=Range(gte=stars_min)))
     if source:
         conditions.append(FieldCondition(key="source", match=MatchValue(value=source)))
     if since:
-        conditions.append(FieldCondition(key="fetched_at", range=DatetimeRange(gte=since)))
+        conditions.append(
+            FieldCondition(key="fetched_at", range=DatetimeRange(gte=since))
+        )
     return Filter(must=conditions) if conditions else None
 
 
@@ -50,7 +60,14 @@ class SearchClient:
         self._http = httpx.Client(timeout=60.0)
 
     def _embed(self, text: str) -> list[float]:
-        return post_embed(self._http, self._embed_url, [text], self._embed_collection, "search", self._api_key)[0]
+        return post_embed(
+            self._http,
+            self._embed_url,
+            [text],
+            self._embed_collection,
+            "search",
+            self._api_key,
+        )[0]
 
     def search(
         self,
