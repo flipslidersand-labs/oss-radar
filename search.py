@@ -43,12 +43,8 @@ COLLECTION = os.getenv("COLLECTION", DEFAULT_COLLECTION)
     help="ライセンスフィルタ (例: MIT, Apache-2.0)",
 )
 @click.option("--stars-min", default=0, type=int, help="最低スター数")
-@click.option(
-    "--source", default=None, help="収集元フィルタ (例: ossinsight, github-trending)"
-)
-@click.option(
-    "--since", default=None, help="収集日時フィルタ YYYY-MM-DD (fetched_at >= since)"
-)
+@click.option("--source", default=None, help="収集元フィルタ (例: ossinsight, github-trending)")
+@click.option("--since", default=None, help="収集日時フィルタ YYYY-MM-DD (fetched_at >= since)")
 @click.option("--limit", default=10, type=int, help="表示件数")
 def search(
     query: str,
@@ -62,9 +58,7 @@ def search(
     insecure = insecure_embed_url_warning(EMBED_URL, EMBED_API_KEY)
     if insecure:
         click.echo(f"[WARN] {insecure}", err=True)
-    client = SearchClient(
-        QDRANT_URL, EMBED_URL, EMBED_API_KEY, EMBED_COLLECTION, QDRANT_API_KEY
-    )
+    client = SearchClient(QDRANT_URL, EMBED_URL, EMBED_API_KEY, EMBED_COLLECTION, QDRANT_API_KEY)
     results = client.search(
         query,
         COLLECTION,

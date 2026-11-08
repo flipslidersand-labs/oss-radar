@@ -35,6 +35,4 @@ def test_no_warning_for_local_or_https(url):
 
 
 def test_no_warning_without_api_key():
-    assert (
-        insecure_embed_url_warning("http://your-embed-svc:9092/embed/batch", "") is None
-    )
+    assert insecure_embed_url_warning("http://your-embed-svc:9092/embed/batch", "") is None

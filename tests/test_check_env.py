@@ -31,9 +31,7 @@ def test_warns_when_api_key_missing(monkeypatch, capsys):
 
 
 def test_no_warning_when_dry_run(monkeypatch, capsys):
-    err = _run(
-        monkeypatch, capsys, dry_run=True, api_key="", url="http://example.com/embed"
-    )
+    err = _run(monkeypatch, capsys, dry_run=True, api_key="", url="http://example.com/embed")
     assert err == ""
 
 
