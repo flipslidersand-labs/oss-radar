@@ -11,9 +11,7 @@ NOW = "2026-01-01T00:00:00+00:00"
 
 
 def test_parse_basic():
-    posts = _parse(
-        [{"objectID": "1", "title": "T", "url": "https://x.dev/a", "points": 42}], NOW
-    )
+    posts = _parse([{"objectID": "1", "title": "T", "url": "https://x.dev/a", "points": 42}], NOW)
     assert len(posts) == 1
     p = posts[0]
     assert (p.url, p.title, p.score, p.source) == ("https://x.dev/a", "T", 42, "hn")

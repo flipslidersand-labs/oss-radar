@@ -18,17 +18,7 @@ def _repo(name: str) -> Repo:
     return Repo(name, "", 1, None, [], None, "test", "t")
 
 
-def _run(
-    args=(),
-    *,
-    token="tok",
-    gs=None,
-    ght=None,
-    bj=None,
-    oi=None,
-    ingest_count=3,
-    snapshot=None
-):
+def _run(args=(), *, token="tok", gs=None, ght=None, bj=None, oi=None, ingest_count=3, snapshot=None):
     """gs/ght/bj/oi: 戻り値(list) か例外。未指定は 1 件返す。"""
 
     def mk(v, default):
@@ -39,18 +29,10 @@ def _run(
         st.enter_context(patch.object(main, "GITHUB_TOKEN", token))
         st.enter_context(patch.object(main, "EMBED_API_KEY", "k"))
         st.enter_context(patch.object(main, "EMBED_URL", "https://e.example/embed"))
-        st.enter_context(
-            patch("collectors.github_search.collect", **mk(gs, [_repo("gs/a")]))
-        )
-        st.enter_context(
-            patch("collectors.gh_trending.collect", **mk(ght, [_repo("gt/a")]))
-        )
-        st.enter_context(
-            patch("collectors.bestofjs.collect", **mk(bj, [_repo("bj/a")]))
-        )
-        st.enter_context(
-            patch("collectors.ossinsight.collect", **mk(oi, [_repo("oi/a")]))
-        )
+        st.enter_context(patch("collectors.github_search.collect", **mk(gs, [_repo("gs/a")])))
+        st.enter_context(patch("collectors.gh_trending.collect", **mk(ght, [_repo("gt/a")])))
+        st.enter_context(patch("collectors.bestofjs.collect", **mk(bj, [_repo("bj/a")])))
+        st.enter_context(patch("collectors.ossinsight.collect", **mk(oi, [_repo("oi/a")])))
         ingest = st.enter_context(patch("ingest.ingest", return_value=ingest_count))
         snap_kw = {"side_effect": snapshot} if snapshot else {}
         snap = st.enter_context(patch("oss_radar.stats.record_snapshot", **snap_kw))
@@ -79,15 +61,10 @@ def test_all_sources_ok_ingests_deduped():
 
 
 def test_source_failure_is_recorded_and_others_continue():
-    result, summary, ingest, _ = _run(
-        gs=RuntimeError("gs boom"), oi=RuntimeError("oi boom")
-    )
+    result, summary, ingest, _ = _run(gs=RuntimeError("gs boom"), oi=RuntimeError("oi boom"))
     assert result.exit_code == 0
     assert {e["source"] for e in summary["errors"]} == {"github_search", "ossinsight"}
-    assert (
-        summary["sources"]["github_search"] == 0
-        and summary["sources"]["ossinsight"] == 0
-    )
+    assert summary["sources"]["github_search"] == 0 and summary["sources"]["ossinsight"] == 0
     assert summary["sources"]["bestofjs"] == 1
     ingest.assert_called_once()
 

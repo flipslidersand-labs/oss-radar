@@ -23,9 +23,7 @@ def test_parse_score_and_skip_incomplete():
         ("記事A", 123, "hatena"),
         ("記事B", 0, "hatena"),
     ]
-    assert (
-        posts[0].discussion_url == "https://b.hatena.ne.jp/entry/https://example.com/a"
-    )
+    assert posts[0].discussion_url == "https://b.hatena.ne.jp/entry/https://example.com/a"
 
 
 def test_parse_invalid_xml_returns_empty():

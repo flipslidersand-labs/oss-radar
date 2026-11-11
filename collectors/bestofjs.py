@@ -14,9 +14,7 @@ from models import Repo
 _BASE = "https://api.github.com/search/repositories"
 
 
-def _fetch_lang(
-    lang: str, headers: dict, since: str, per_lang: int, now: str
-) -> list[Repo]:
+def _fetch_lang(lang: str, headers: dict, since: str, per_lang: int, now: str) -> list[Repo]:
     """言語別に取得する。429 のみ Retry-After 秒待って 1 回再試行し、それ以外の失敗は空リスト。
 
     github_search._get_page は 429 を待たずスキップし 5xx を指数バックオフで再試行する。
