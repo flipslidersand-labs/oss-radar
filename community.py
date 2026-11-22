@@ -40,9 +40,7 @@ def dedup(posts) -> list:
 
 
 @click.command()
-@click.option(
-    "--dry-run", is_flag=True, default=False, help="Qdrant に書かず結果だけ表示"
-)
+@click.option("--dry-run", is_flag=True, default=False, help="Qdrant に書かず結果だけ表示")
 def main(dry_run: bool):
     from collectors import hatena, hn, zenn
 

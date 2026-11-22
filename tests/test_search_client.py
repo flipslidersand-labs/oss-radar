@@ -72,9 +72,7 @@ def test_embed_no_header_when_empty_key():
 
 def test_embed_propagates_http_error():
     response = MagicMock(spec=httpx.Response)
-    response.raise_for_status.side_effect = httpx.HTTPStatusError(
-        "401", request=MagicMock(), response=response
-    )
+    response.raise_for_status.side_effect = httpx.HTTPStatusError("401", request=MagicMock(), response=response)
     with pytest.raises(httpx.HTTPStatusError):
         _embed_client(response=response)._embed("q")
 

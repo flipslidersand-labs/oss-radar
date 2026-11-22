@@ -28,17 +28,13 @@ def build_filter(
     if lang:
         conditions.append(FieldCondition(key="lang", match=MatchValue(value=lang)))
     if license_:
-        conditions.append(
-            FieldCondition(key="license", match=MatchValue(value=license_))
-        )
+        conditions.append(FieldCondition(key="license", match=MatchValue(value=license_)))
     if stars_min > 0:
         conditions.append(FieldCondition(key="stars", range=Range(gte=stars_min)))
     if source:
         conditions.append(FieldCondition(key="source", match=MatchValue(value=source)))
     if since:
-        conditions.append(
-            FieldCondition(key="fetched_at", range=DatetimeRange(gte=since))
-        )
+        conditions.append(FieldCondition(key="fetched_at", range=DatetimeRange(gte=since)))
     return Filter(must=conditions) if conditions else None
 
 
