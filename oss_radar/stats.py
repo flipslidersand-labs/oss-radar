@@ -14,9 +14,7 @@ _DUMMY_VECTOR = [0.0]
 
 
 def _ensure_stats_collection(client: QdrantClient) -> None:
-    ensure_collection(
-        client, STATS_COLLECTION, VectorParams(size=1, distance=Distance.COSINE)
-    )
+    ensure_collection(client, STATS_COLLECTION, VectorParams(size=1, distance=Distance.COSINE))
 
 
 def _make_point_id(date_str: str, source: str) -> int:

@@ -68,9 +68,7 @@ def test_404_returns_empty():
 
 def test_request_error_returns_empty():
     client = MagicMock(spec=httpx.Client)
-    client.get.side_effect = httpx.RequestError(
-        "connection refused", request=MagicMock()
-    )
+    client.get.side_effect = httpx.RequestError("connection refused", request=MagicMock())
     assert _fetch_lang(client, "Go", NOW) == []
 
 

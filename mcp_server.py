@@ -55,9 +55,7 @@ _search_client: SearchClient | None = None
 def _get_client() -> SearchClient:
     global _search_client
     if _search_client is None:
-        _search_client = SearchClient(
-            QDRANT_URL, EMBED_URL, EMBED_API_KEY, EMBED_COLLECTION, QDRANT_API_KEY
-        )
+        _search_client = SearchClient(QDRANT_URL, EMBED_URL, EMBED_API_KEY, EMBED_COLLECTION, QDRANT_API_KEY)
     return _search_client
 
 
@@ -117,9 +115,7 @@ async def on_list_tools(ctx, params) -> types.ListToolsResult:
 async def on_call_tool(ctx, params) -> types.CallToolResult:
     if params.name != "search_trending":
         return types.CallToolResult(
-            content=[
-                types.TextContent(type="text", text=f"Unknown tool: {params.name}")
-            ],
+            content=[types.TextContent(type="text", text=f"Unknown tool: {params.name}")],
             isError=True,
         )
 
@@ -134,11 +130,7 @@ async def on_call_tool(ctx, params) -> types.CallToolResult:
         limit: int = min(int(args.get("limit", 10)), 50)
     except (ValueError, TypeError):
         return types.CallToolResult(
-            content=[
-                types.TextContent(
-                    type="text", text="stars_min と limit は整数で指定してください"
-                )
-            ],
+            content=[types.TextContent(type="text", text="stars_min と limit は整数で指定してください")],
             isError=True,
         )
 
@@ -193,11 +185,7 @@ async def on_call_tool(ctx, params) -> types.CallToolResult:
         )
 
     return types.CallToolResult(
-        content=[
-            types.TextContent(
-                type="text", text=json.dumps(rows, ensure_ascii=False, indent=2)
-            )
-        ],
+        content=[types.TextContent(type="text", text=json.dumps(rows, ensure_ascii=False, indent=2))],
         isError=False,
     )
 
