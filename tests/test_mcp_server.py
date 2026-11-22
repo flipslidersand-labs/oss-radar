@@ -41,9 +41,7 @@ def test_list_tools_schema():
     (tool,) = r["tools"]
     assert tool["name"] == "search_trending"
     assert tool["inputSchema"]["required"] == ["query"]
-    assert {"lang", "license", "stars_min", "source", "since", "limit"} <= set(
-        tool["inputSchema"]["properties"]
-    )
+    assert {"lang", "license", "stars_min", "source", "since", "limit"} <= set(tool["inputSchema"]["properties"])
 
 
 def test_unknown_tool_is_error():
